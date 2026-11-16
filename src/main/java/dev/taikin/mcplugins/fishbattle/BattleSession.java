@@ -9,7 +9,6 @@ public final class BattleSession {
 
     public enum Phase {
         IDLE,
-        COUNTDOWN,
         CHOOSING,
         REVEALING,
         MASHING,

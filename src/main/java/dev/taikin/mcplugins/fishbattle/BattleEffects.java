@@ -60,15 +60,16 @@ final class BattleEffects {
                 Duration.ofMillis(150), Duration.ofSeconds(2), Duration.ofMillis(400))));
     }
 
-    void countdownTitle(Player player, String text, int staySeconds) {
+    void countdownTitle(Player player, String text, String subtitle, int staySeconds) {
         if (player == null) {
             return;
         }
         player.showTitle(Title.title(
                 Component.text(text, NamedTextColor.GOLD),
-                Component.text("手を選べ！", NamedTextColor.GRAY),
-                Title.Times.times(Duration.ofMillis(200),
-                        Duration.ofSeconds(Math.max(1, staySeconds)), Duration.ofMillis(300))));
+                Component.text(subtitle, NamedTextColor.GRAY),
+                Title.Times.times(Duration.ofMillis(120),
+                        Duration.ofSeconds(Math.max(1, staySeconds)), Duration.ofMillis(150))));
+        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 0.5f, 1.5f);
     }
 
     void ownHand(Player player, Rps hand) {

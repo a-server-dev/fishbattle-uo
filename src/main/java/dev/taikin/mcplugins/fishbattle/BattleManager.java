@@ -30,7 +30,8 @@ public final class BattleManager {
 
     private static final long MASH_MILLIS = 3000L;
     private static final int MASH_TICKS = (int) (MASH_MILLIS / 50L);
-    private static final int COUNTDOWN_SECONDS = 3;
+    private static final long CHOICE_GUI_DELAY_TICKS = 10L;
+    private static final int REVEAL_COUNTDOWN_TICKS = 5;
     private static final int RESULT_HOLD_TICKS = 60;
     private static final int ATTACK_DELAY_TICKS = 20;
     private static final int REVEAL_STEP_TICKS = 15;
@@ -348,7 +349,6 @@ public final class BattleManager {
             return;
         }
         session.setRound(round);
-        session.setPhase(BattleSession.Phase.COUNTDOWN);
         session.clearChoices();
         session.resetMash();
         session.setAttacker(null);
@@ -362,35 +362,11 @@ public final class BattleManager {
             status(b, session);
         }
         broadcast(session, Component.text("── 第" + round + "ラウンド ──", NamedTextColor.GOLD));
-        startCountdown(session, a, b);
-    }
-
-    private void startCountdown(BattleSession session, Player a, Player b) {
-        session.setPhase(BattleSession.Phase.COUNTDOWN);
+        session.setPhase(BattleSession.Phase.CHOOSING);
         broadcast(session, Component.text("手を選べ！", NamedTextColor.RED));
-        effects.countdownTitle(a, "手を選べ！", COUNTDOWN_SECONDS);
-        effects.countdownTitle(b, "手を選べ！", COUNTDOWN_SECONDS);
-        for (int i = 1; i <= COUNTDOWN_SECONDS; i++) {
-            int remaining = COUNTDOWN_SECONDS - i + 1;
-            Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                if (session.closed() || session.phase() != BattleSession.Phase.COUNTDOWN) {
-                    return;
-                }
-                effects.countdownTitle(a, Integer.toString(remaining), COUNTDOWN_SECONDS);
-                effects.countdownTitle(b, Integer.toString(remaining), COUNTDOWN_SECONDS);
-                effects.countdownNote(a);
-                effects.countdownNote(b);
-            }, i * 20L);
-        }
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            if (session.closed() || session.phase() != BattleSession.Phase.COUNTDOWN) {
-                return;
-            }
-            broadcast(session, Component.text("スタート！", NamedTextColor.GREEN));
-            effects.countdownTitle(a, "スタート！", 1);
-            effects.countdownTitle(b, "スタート！", 1);
-            beginChoosing(session);
-        }, (COUNTDOWN_SECONDS + 1) * 20L);
+        effects.countdownTitle(a, "手を選べ！", "GUIで選ぶ", 1);
+        effects.countdownTitle(b, "手を選べ！", "GUIで選ぶ", 1);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> beginChoosing(session), CHOICE_GUI_DELAY_TICKS);
     }
 
     private boolean checkDistance(BattleSession session) {
@@ -547,6 +523,37 @@ public final class BattleManager {
                 .build());
     }
 
+    private void startRevealCountdown(BattleSession session) {
+        Player a = Bukkit.getPlayer(session.playerA());
+        Player b = Bukkit.getPlayer(session.playerB());
+        broadcast(session, Component.text("3", NamedTextColor.GOLD));
+        effects.countdownTitle(a, "3", "連打しろ！", 1);
+        effects.countdownTitle(b, "3", "連打しろ！", 1);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (session.closed() || session.phase() != BattleSession.Phase.REVEALING) {
+                return;
+            }
+            broadcast(session, Component.text("2", NamedTextColor.GOLD));
+            effects.countdownTitle(a, "2", "連打しろ！", 1);
+            effects.countdownTitle(b, "2", "連打しろ！", 1);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                if (session.closed() || session.phase() != BattleSession.Phase.REVEALING) {
+                    return;
+                }
+                broadcast(session, Component.text("1", NamedTextColor.GOLD));
+                effects.countdownTitle(a, "1", "連打しろ！", 1);
+                effects.countdownTitle(b, "1", "連打しろ！", 1);
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                    if (session.closed() || session.phase() != BattleSession.Phase.REVEALING) {
+                        return;
+                    }
+                    broadcast(session, Component.text("スタート！", NamedTextColor.GREEN));
+                    startMashing(session);
+                }, REVEAL_COUNTDOWN_TICKS);
+            }, REVEAL_COUNTDOWN_TICKS);
+        }, REVEAL_COUNTDOWN_TICKS);
+    }
+
     private void settleAfterMash(BattleSession session) {
         Player pa = Bukkit.getPlayer(session.playerA());
         Player pb = Bukkit.getPlayer(session.playerB());
@@ -569,14 +576,13 @@ public final class BattleManager {
     }
 
     private void beginChoosing(BattleSession session) {
-        if (session.phase() != BattleSession.Phase.COUNTDOWN) {
+        if (session.phase() != BattleSession.Phase.CHOOSING) {
             return;
         }
         if (session.npcTask() != null) {
             session.npcTask().cancel();
             session.setNpcTask(null);
         }
-        session.setPhase(BattleSession.Phase.CHOOSING);
         session.clearChoices();
         List<Rps> order = new ArrayList<>(List.of(Rps.GU, Rps.CHOKI, Rps.PA));
         Collections.shuffle(order);
@@ -762,7 +768,7 @@ public final class BattleManager {
             if (session.closed() || session.phase() != BattleSession.Phase.REVEALING) {
                 return;
             }
-            startMashing(session);
+            startRevealCountdown(session);
         }, REVEAL_STEP_TICKS);
     }
 
