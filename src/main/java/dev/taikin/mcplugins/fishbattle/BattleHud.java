@@ -119,8 +119,12 @@ final class BattleHud {
 
     private static Component selfLabel(BattleSession session, UUID viewerId, Fish self, boolean mashing) {
         if (mashing) {
-            return Component.text("自分 気合 " + Math.round(session.charge(viewerId) * 100) + "%",
-                    NamedTextColor.GREEN);
+            return Component.text()
+                    .append(Component.text("自分 ", NamedTextColor.GREEN))
+                    .append(typeTag(self))
+                    .append(Component.text(" 気合 " + Math.round(session.charge(viewerId) * 100) + "%",
+                            NamedTextColor.GREEN))
+                    .build();
         }
         return hpLabel("自分", self, NamedTextColor.GREEN);
     }
@@ -129,18 +133,38 @@ final class BattleHud {
             boolean mashing) {
         UUID opponentId = session.opponentOf(viewerId);
         if (mashing) {
-            return Component.text(session.nameOf(opponentId) + "  気合 "
-                    + Math.round(session.charge(opponentId) * 100) + "%", NamedTextColor.RED);
+            return Component.text()
+                    .append(Component.text(session.nameOf(opponentId) + " ", NamedTextColor.RED))
+                    .append(typeTag(opponent))
+                    .append(Component.text(" 気合 " + Math.round(session.charge(opponentId) * 100) + "%",
+                            NamedTextColor.RED))
+                    .build();
         }
         String who = session.nameOf(opponentId);
-        return Component.text(who + "  " + opponent.displayName() + "  Lv" + opponent.level()
-                + "  HP " + opponent.hp() + "/" + opponent.maxHp(),
-                opponent.hp() * 3 <= opponent.maxHp() ? NamedTextColor.DARK_RED : NamedTextColor.RED);
+        NamedTextColor color = opponent.hp() * 3 <= opponent.maxHp()
+                ? NamedTextColor.DARK_RED : NamedTextColor.RED;
+        return Component.text()
+                .append(Component.text(who + "  ", color))
+                .append(typeTag(opponent))
+                .append(Component.text(" " + opponent.displayName() + "  Lv" + opponent.level()
+                        + "  HP " + opponent.hp() + "/" + opponent.maxHp(), color))
+                .build();
     }
 
     private static Component hpLabel(String prefix, Fish fish, NamedTextColor color) {
-        return Component.text(prefix + " " + fish.displayName() + "  Lv" + fish.level()
-                + "  HP " + fish.hp() + "/" + fish.maxHp(), color);
+        return Component.text()
+                .append(Component.text(prefix + "  ", color))
+                .append(typeTag(fish))
+                .append(Component.text(" " + fish.displayName() + "  Lv" + fish.level()
+                        + "  HP " + fish.hp() + "/" + fish.maxHp(), color))
+                .build();
+    }
+
+    private static Component typeTag(Fish fish) {
+        if (fish == null) {
+            return Component.empty();
+        }
+        return Component.text(fish.type().emoji() + fish.type().label(), fish.type().color());
     }
 
     private static float hpRatio(Fish fish) {
