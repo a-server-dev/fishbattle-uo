@@ -32,6 +32,8 @@ public final class BattleSession {
     private double chargeB;
     private boolean mashA = true;
     private boolean mashB = true;
+    private int mashTierA;
+    private int mashTierB;
     private long lastMashAtA;
     private long lastMashAtB;
     private float savedExpA;
@@ -250,6 +252,8 @@ public final class BattleSession {
         this.chargeB = 0.0;
         this.lastMashAtA = 0L;
         this.lastMashAtB = 0L;
+        this.mashTierA = 0;
+        this.mashTierB = 0;
     }
 
     public boolean needsMash(UUID player) {
@@ -266,6 +270,18 @@ public final class BattleSession {
 
     public boolean anyNeedsMash() {
         return mashA || mashB;
+    }
+
+    public int mashTier(UUID player) {
+        return player.equals(a) ? mashTierA : mashTierB;
+    }
+
+    public void setMashTier(UUID player, int tier) {
+        if (player.equals(a)) {
+            mashTierA = tier;
+        } else {
+            mashTierB = tier;
+        }
     }
 
     public boolean registerMash(UUID player, long now) {
