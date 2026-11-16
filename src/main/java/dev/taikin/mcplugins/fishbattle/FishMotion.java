@@ -10,6 +10,7 @@ import org.bukkit.entity.Axolotl;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.PufferFish;
 import org.bukkit.entity.Tadpole;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.Plugin;
@@ -254,6 +255,12 @@ public final class FishMotion {
         }
         if (entity instanceof Tadpole tadpole) {
             tadpole.setAgeLock(true);
+        }
+        if (entity instanceof PufferFish puffer) {
+            Integer puff = pdc(entity).get(FishKeys.PUFF, PersistentDataType.INTEGER);
+            if (puff != null && puffer.getPuffState() != puff) {
+                puffer.setPuffState(puff);
+            }
         }
     }
 

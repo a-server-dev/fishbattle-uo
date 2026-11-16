@@ -12,13 +12,16 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.PufferFish;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.Sound;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 
 public final class PetMenu {
 
+    public static final int SLOT_PUFF = 3;
     public static final int SLOT_INFO = 4;
     public static final int SLOT_RENAME = 5;
     public static final int SLOT_FOLLOW = 6;
@@ -147,6 +150,10 @@ public final class PetMenu {
         inventory.setItem(SLOT_STATS, actionItem(Material.BOOK, "パラメータを見る",
                 NamedTextColor.LIGHT_PURPLE, List.of("強さ・体力・テクニック・EXPのバー")));
 
+        if (entity instanceof PufferFish puffer) {
+            inventory.setItem(SLOT_PUFF, puffItem(puffer.getPuffState()));
+        }
+
         List<Rps> hands = List.of(Rps.GU, Rps.CHOKI, Rps.PA);
         for (int i = 0; i < hands.size(); i++) {
             Rps hand = hands.get(i);
@@ -158,6 +165,18 @@ public final class PetMenu {
                 inventory.setItem(SLOT_TECH[i], emptyTechniqueItem(hand));
             }
         }
+    }
+
+    private ItemStack puffItem(int state) {
+        String[] labels = {"ふつう", "ふくらみ", "最大"};
+        ItemStack item = new ItemStack(Material.PUFFERFISH);
+        item.editMeta(meta -> {
+            meta.customName(Component.text("ふくらませる: " + labels[Math.max(0, Math.min(2, state))],
+                    NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
+            meta.lore(List.of(line("クリックで ふつう → ふくらみ → 最大 と切り替え",
+                    NamedTextColor.GRAY), line("攻撃判定はありません", NamedTextColor.DARK_GRAY)));
+        });
+        return item;
     }
 
     private ItemStack filler() {
@@ -343,6 +362,17 @@ public final class PetMenu {
             }
             case SLOT_BACK -> {
                 open(player, entity);
+                return;
+            }
+            case SLOT_PUFF -> {
+                if (entity instanceof PufferFish puffer) {
+                    int next = (puffer.getPuffState() + 1) % 3;
+                    puffer.setPuffState(next);
+                    entity.getPersistentDataContainer().set(FishKeys.PUFF, PersistentDataType.INTEGER, next);
+                    player.playSound(player.getLocation(), Sound.ENTITY_PUFFER_FISH_BLOW_UP, 0.7f,
+                            next == 0 ? 0.8f : 1.0f + next * 0.2f);
+                    refreshIfOpen(player);
+                }
                 return;
             }
             case SLOT_TYPE -> player.sendActionBar(

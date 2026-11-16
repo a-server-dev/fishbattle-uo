@@ -50,6 +50,13 @@ public final class CaptureListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
+    public void onPufferContact(EntityDamageByEntityEvent event) {
+        if (event.getDamager() instanceof PufferFish puffer && FishMotion.hasData(puffer)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onPunch(EntityDamageByEntityEvent event) {
         Entity entity = event.getEntity();
         if (!FishMotion.hasData(entity)) {
