@@ -19,12 +19,13 @@ import org.bukkit.persistence.PersistentDataType;
 
 public final class PetMenu {
 
-    public static final int SLOT_INFO = 5;
-    public static final int SLOT_RENAME = 6;
-    public static final int SLOT_FOLLOW = 7;
-    public static final int SLOT_TYPE = 8;
-    public static final int SLOT_COLLECT = 17;
-    public static final int SLOT_REMOVE = 26;
+    public static final int SLOT_INFO = 4;
+    public static final int SLOT_RENAME = 5;
+    public static final int SLOT_FOLLOW = 6;
+    public static final int SLOT_TYPE = 7;
+    public static final int SLOT_STATS = 8;
+    public static final int SLOT_COLLECT = 22;
+    public static final int SLOT_REMOVE = 24;
 
     private static final int SLOT_POWER_LABEL = 0;
     private static final int SLOT_POWER_BAR = 1;
@@ -34,10 +35,11 @@ public final class PetMenu {
     private static final int SLOT_TECH_BAR = 19;
     private static final int SLOT_EXP_LABEL = 27;
     private static final int SLOT_EXP_BAR = 28;
-    private static final int STAT_BARS = 4;
+    private static final int SLOT_BACK = 40;
+    private static final int STAT_BARS = 8;
     private static final int EXP_BARS = 8;
-    private static final int[] HAND_ICON = {14, 15, 16};
-    private static final int[] SLOT_TECH = {23, 24, 25};
+    private static final int[] HAND_ICON = {10, 12, 14};
+    private static final int[] SLOT_TECH = {11, 13, 15};
 
     private static final int MAX_POWER = FishSpecies.allKeys().stream()
             .mapToInt(key -> FishSpecies.byKey(key).power()).max().orElse(100) + Fish.MAX_LEVEL;
@@ -47,7 +49,8 @@ public final class PetMenu {
     private static final int MAX_TECH = FishSpecies.allKeys().stream()
             .mapToInt(key -> FishSpecies.byKey(key).technique()).max().orElse(100) + Fish.MAX_LEVEL / 2;
 
-    private static final int SLOTS = 36;
+    private static final int SLOTS = 27;
+    private static final int STATS_SLOTS = 45;
     private final FishMotion motion;
     private final RenameDialog renameDialog;
     private final Map<UUID, UUID> lastPet = new HashMap<>();
@@ -63,14 +66,24 @@ public final class PetMenu {
             return;
         }
         lastPet.put(player.getUniqueId(), entity.getUniqueId());
-        openMenus.put(player.getUniqueId(), entity.getUniqueId());
-
-        Holder holder = new Holder();
+        Holder holder = new Holder(Page.MAIN);
         Inventory inventory = Bukkit.createInventory(holder, SLOTS,
                 Component.text("魚の設定", NamedTextColor.DARK_AQUA));
         holder.inventory = inventory;
-        render(inventory, entity);
+        render(inventory, entity, holder);
         player.openInventory(inventory);
+        openMenus.put(player.getUniqueId(), entity.getUniqueId());
+    }
+
+    private void openStats(Player player, Entity entity) {
+        lastPet.put(player.getUniqueId(), entity.getUniqueId());
+        Holder holder = new Holder(Page.STATS);
+        Inventory inventory = Bukkit.createInventory(holder, STATS_SLOTS,
+                Component.text("パラメータ", NamedTextColor.DARK_AQUA));
+        holder.inventory = inventory;
+        render(inventory, entity, holder);
+        player.openInventory(inventory);
+        openMenus.put(player.getUniqueId(), entity.getUniqueId());
     }
 
     public void refreshIfOpen(Player player) {
@@ -84,16 +97,23 @@ public final class PetMenu {
             return;
         }
         Inventory top = player.getOpenInventory().getTopInventory();
-        if (top.getHolder() instanceof Holder) {
-            render(top, entity);
+        if (top.getHolder() instanceof Holder holder) {
+            render(top, entity, holder);
             player.updateInventory();
         }
     }
 
-    private void render(Inventory inventory, Entity entity) {
+    private void render(Inventory inventory, Entity entity, Holder holder) {
         Fish fish = FishData.read(entity);
         if (fish == null) {
             return;
+        }
+        if (holder != null && holder.page == Page.STATS) {
+            renderStats(inventory, fish);
+            return;
+        }
+        for (int i = 0; i < inventory.getSize(); i++) {
+            inventory.setItem(i, null);
         }
         inventory.setItem(SLOT_INFO, infoItem(fish));
         inventory.setItem(SLOT_TYPE, typeItem(fish));
@@ -109,16 +129,8 @@ public final class PetMenu {
         inventory.setItem(SLOT_REMOVE, actionItem(Material.BARRIER, "この魚を消す",
                 NamedTextColor.RED, List.of("元に戻せません")));
 
-        statRow(inventory, SLOT_POWER_LABEL, SLOT_POWER_BAR, Material.IRON_SWORD,
-                "強さ", fish.power(), MAX_POWER, NamedTextColor.RED,
-                "与えるダメージの大きさ");
-        statRow(inventory, SLOT_HP_LABEL, SLOT_HP_BAR, Material.GOLDEN_APPLE,
-                "体力", fish.maxHp(), MAX_HP, NamedTextColor.GREEN,
-                "HPの高さ（現在 " + fish.hp() + "/" + fish.maxHp() + "）");
-        statRow(inventory, SLOT_TECH_LABEL, SLOT_TECH_BAR, Material.FEATHER,
-                "テクニック", fish.technique(), MAX_TECH, NamedTextColor.AQUA,
-                "気合の溜まりやすさ");
-        expRow(inventory, fish);
+        inventory.setItem(SLOT_STATS, actionItem(Material.BOOK, "パラメータを見る",
+                NamedTextColor.LIGHT_PURPLE, List.of("強さ・体力・テクニック・EXPのバー")));
 
         List<Rps> hands = List.of(Rps.GU, Rps.CHOKI, Rps.PA);
         for (int i = 0; i < hands.size(); i++) {
@@ -148,6 +160,21 @@ public final class PetMenu {
                     : "この手で勝つと右の技が発動", NamedTextColor.GRAY)));
         });
         return item;
+    }
+
+    private void renderStats(Inventory inventory, Fish fish) {
+        statRow(inventory, SLOT_POWER_LABEL, SLOT_POWER_BAR, Material.IRON_SWORD,
+                "強さ", fish.power(), MAX_POWER, NamedTextColor.RED,
+                "与えるダメージの大きさ");
+        statRow(inventory, SLOT_HP_LABEL, SLOT_HP_BAR, Material.GOLDEN_APPLE,
+                "体力", fish.maxHp(), MAX_HP, NamedTextColor.GREEN,
+                "HPの高さ（現在 " + fish.hp() + "/" + fish.maxHp() + "）");
+        statRow(inventory, SLOT_TECH_LABEL, SLOT_TECH_BAR, Material.FEATHER,
+                "テクニック", fish.technique(), MAX_TECH, NamedTextColor.AQUA,
+                "気合の溜まりやすさ");
+        expRow(inventory, fish);
+        inventory.setItem(SLOT_BACK, actionItem(Material.ARROW, "戻る",
+                NamedTextColor.WHITE, List.of("設定画面に戻る")));
     }
 
     private void statRow(Inventory inventory, int labelSlot, int barSlot, Material icon,
@@ -291,6 +318,14 @@ public final class PetMenu {
             return;
         }
         switch (slot) {
+            case SLOT_STATS -> {
+                openStats(player, entity);
+                return;
+            }
+            case SLOT_BACK -> {
+                open(player, entity);
+                return;
+            }
             case SLOT_TYPE -> player.sendActionBar(
                     net.kyori.adventure.text.Component.text("属性は捕獲時に決まり変更できません",
                             NamedTextColor.GRAY));
@@ -317,6 +352,9 @@ public final class PetMenu {
                 player.closeInventory();
             }
             default -> {
+                if (!isMainPage(player)) {
+                    return;
+                }
                 Rps hand = handAtSlot(slot);
                 if (hand != null) {
                     untrain(player, entity, hand);
@@ -324,6 +362,11 @@ public final class PetMenu {
                 }
             }
         }
+    }
+
+    private boolean isMainPage(Player player) {
+        return player.getOpenInventory().getTopInventory().getHolder() instanceof Holder holder
+                && holder.page == Page.MAIN;
     }
 
     private static Rps handAtSlot(int slot) {
@@ -508,8 +551,18 @@ public final class PetMenu {
         return Component.text(text, color).decoration(TextDecoration.ITALIC, false);
     }
 
+    private enum Page {
+        MAIN,
+        STATS
+    }
+
     private static final class Holder implements org.bukkit.inventory.InventoryHolder {
+        private final Page page;
         private Inventory inventory;
+
+        private Holder(Page page) {
+            this.page = page;
+        }
 
         @Override
         public Inventory getInventory() {
