@@ -24,8 +24,10 @@ public final class PetMenu {
     public static final int SLOT_FOLLOW = 6;
     public static final int SLOT_TYPE = 7;
     public static final int SLOT_STATS = 8;
-    public static final int SLOT_COLLECT = 22;
-    public static final int SLOT_REMOVE = 24;
+    public static final int SLOT_COLLECT = 13;
+    public static final int SLOT_REMOVE = 14;
+
+    private static final int[] DIVIDER = {2, 11, 20};
 
     private static final int SLOT_POWER_LABEL = 0;
     private static final int SLOT_POWER_BAR = 1;
@@ -38,8 +40,8 @@ public final class PetMenu {
     private static final int SLOT_BACK = 40;
     private static final int STAT_BARS = 8;
     private static final int EXP_BARS = 8;
-    private static final int[] HAND_ICON = {10, 12, 14};
-    private static final int[] SLOT_TECH = {11, 13, 15};
+    private static final int[] HAND_ICON = {0, 9, 18};
+    private static final int[] SLOT_TECH = {1, 10, 19};
 
     private static final int MAX_POWER = FishSpecies.allKeys().stream()
             .mapToInt(key -> FishSpecies.byKey(key).power()).max().orElse(100) + Fish.MAX_LEVEL;
@@ -115,6 +117,9 @@ public final class PetMenu {
         for (int i = 0; i < inventory.getSize(); i++) {
             inventory.setItem(i, null);
         }
+        for (int slot : DIVIDER) {
+            inventory.setItem(slot, filler());
+        }
         inventory.setItem(SLOT_INFO, infoItem(fish));
         inventory.setItem(SLOT_TYPE, typeItem(fish));
         inventory.setItem(SLOT_RENAME, actionItem(Material.NAME_TAG, "名前を変える",
@@ -143,6 +148,12 @@ public final class PetMenu {
                 inventory.setItem(SLOT_TECH[i], emptyTechniqueItem(hand));
             }
         }
+    }
+
+    private ItemStack filler() {
+        ItemStack item = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+        item.editMeta(meta -> meta.customName(Component.text(" ")));
+        return item;
     }
 
     private ItemStack handItem(Rps hand, Technique technique) {
