@@ -844,21 +844,28 @@ public final class BattleManager {
         }
         if (session.registerMash(player.getUniqueId(), System.currentTimeMillis())) {
             int count = session.clicks(player.getUniqueId());
-            double charge = session.charge(player.getUniqueId());
-            float pitch = (float) (0.7 + Math.min(1.0, charge) * 1.5);
+            double charge = Math.min(1.0, session.charge(player.getUniqueId()));
+            float pitch = notePitch(charge);
             if (count % 2 == 0) {
-                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 0.35f, pitch);
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_HARP, 0.5f, pitch);
+            } else {
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 0.18f, pitch);
             }
-            if (count % 2 == 1) {
-                player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.25f, pitch);
-            }
-            int tier = (int) (charge * 4.0);
+            int tier = (int) (charge * (SCALE.length - 1));
             if (tier > session.mashTier(player.getUniqueId())) {
                 session.setMashTier(player.getUniqueId(), tier);
-                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 0.6f,
-                        (float) (1.0 + tier * 0.25));
+                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BELL, 0.35f,
+                        notePitch(charge));
             }
         }
+    }
+
+    private static final int[] SCALE = {0, 2, 4, 5, 7, 9, 11, 12, 14, 16, 17, 19, 21};
+
+    private static float notePitch(double charge) {
+        int step = (int) Math.round(Math.max(0.0, Math.min(1.0, charge)) * (SCALE.length - 1));
+        int semitone = SCALE[Math.max(0, Math.min(SCALE.length - 1, step))];
+        return (float) (0.6 * Math.pow(2.0, semitone / 12.0));
     }
 
     private void resolveAttack(BattleSession session, UUID attackerId, UUID defenderId,
