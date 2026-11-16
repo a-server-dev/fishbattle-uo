@@ -146,12 +146,7 @@ public final class PetMenu {
     }
 
     private ItemStack handItem(Rps hand, Technique technique) {
-        Material material = switch (hand) {
-            case GU -> Material.BLUE_DYE;
-            case CHOKI -> Material.RED_DYE;
-            case PA -> Material.YELLOW_DYE;
-        };
-        ItemStack item = new ItemStack(material);
+        ItemStack item = new ItemStack(hand.icon());
         item.editMeta(meta -> {
             meta.customName(Component.text(hand.emoji() + " " + hand.label() + "の技",
                     hand.color()).decoration(TextDecoration.ITALIC, false));
@@ -261,7 +256,7 @@ public final class PetMenu {
     }
 
     private ItemStack typeItem(Fish fish) {
-        ItemStack item = new ItemStack(Material.PRISMARINE_SHARD);
+        ItemStack item = new ItemStack(fish.type().hand().icon());
         item.editMeta(meta -> {
             meta.customName(Component.text("属性: " + fish.type().label(), fish.type().color())
                     .decoration(TextDecoration.ITALIC, false));

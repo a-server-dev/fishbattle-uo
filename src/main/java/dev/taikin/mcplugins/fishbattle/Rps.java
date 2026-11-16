@@ -1,6 +1,7 @@
 package dev.taikin.mcplugins.fishbattle;
 
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Material;
 
 public enum Rps {
     GU("グー", "✊", FishType.BLUE),
@@ -31,6 +32,14 @@ public enum Rps {
 
     public NamedTextColor color() {
         return type.color();
+    }
+
+    public Material icon() {
+        return switch (this) {
+            case GU -> Material.IRON_ORE;
+            case CHOKI -> Material.SHEARS;
+            case PA -> Material.PAPER;
+        };
     }
 
     public boolean beats(Rps other) {

@@ -103,12 +103,7 @@ public final class BattleHandMenu implements Listener {
     }
 
     private static ItemStack item(Rps hand, Technique technique) {
-        Material material = switch (hand) {
-            case GU -> Material.BLUE_DYE;
-            case CHOKI -> Material.RED_DYE;
-            case PA -> Material.YELLOW_DYE;
-        };
-        ItemStack item = new ItemStack(material);
+        ItemStack item = new ItemStack(hand.icon());
         item.editMeta(meta -> {
             meta.customName(Component.text(hand.emoji() + " " + hand.label(), hand.color())
                     .decoration(TextDecoration.ITALIC, false));
