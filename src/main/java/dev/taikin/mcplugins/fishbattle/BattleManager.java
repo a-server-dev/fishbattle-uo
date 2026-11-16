@@ -524,34 +524,44 @@ public final class BattleManager {
     }
 
     private void startRevealCountdown(BattleSession session) {
-        Player a = Bukkit.getPlayer(session.playerA());
-        Player b = Bukkit.getPlayer(session.playerB());
-        broadcast(session, Component.text("3", NamedTextColor.GOLD));
-        effects.countdownTitle(a, "3", "連打しろ！", 1);
-        effects.countdownTitle(b, "3", "連打しろ！", 1);
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            if (session.closed() || session.phase() != BattleSession.Phase.REVEALING) {
-                return;
+        revealCountdownStep(session, 3);
+    }
+
+    private void revealCountdownStep(BattleSession session, int remaining) {
+        if (session.closed() || session.phase() != BattleSession.Phase.REVEALING) {
+            return;
+        }
+        for (UUID id : new UUID[] {session.playerA(), session.playerB()}) {
+            if (!session.needsMash(id)) {
+                continue;
             }
-            broadcast(session, Component.text("2", NamedTextColor.GOLD));
-            effects.countdownTitle(a, "2", "連打しろ！", 1);
-            effects.countdownTitle(b, "2", "連打しろ！", 1);
+            Player player = Bukkit.getPlayer(id);
+            if (player == null) {
+                continue;
+            }
+            player.sendMessage(Component.text(Integer.toString(remaining), NamedTextColor.GOLD));
+            effects.countdownTitle(player, Integer.toString(remaining), "連打しろ！", 1);
+        }
+        if (remaining <= 1) {
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 if (session.closed() || session.phase() != BattleSession.Phase.REVEALING) {
                     return;
                 }
-                broadcast(session, Component.text("1", NamedTextColor.GOLD));
-                effects.countdownTitle(a, "1", "連打しろ！", 1);
-                effects.countdownTitle(b, "1", "連打しろ！", 1);
-                Bukkit.getScheduler().runTaskLater(plugin, () -> {
-                    if (session.closed() || session.phase() != BattleSession.Phase.REVEALING) {
-                        return;
+                for (UUID id : new UUID[] {session.playerA(), session.playerB()}) {
+                    if (!session.needsMash(id)) {
+                        continue;
                     }
-                    broadcast(session, Component.text("スタート！", NamedTextColor.GREEN));
-                    startMashing(session);
-                }, REVEAL_COUNTDOWN_TICKS);
+                    Player player = Bukkit.getPlayer(id);
+                    if (player != null) {
+                        player.sendMessage(Component.text("スタート！", NamedTextColor.GREEN));
+                    }
+                }
+                startMashing(session);
             }, REVEAL_COUNTDOWN_TICKS);
-        }, REVEAL_COUNTDOWN_TICKS);
+            return;
+        }
+        Bukkit.getScheduler().runTaskLater(plugin,
+                () -> revealCountdownStep(session, remaining - 1), REVEAL_COUNTDOWN_TICKS);
     }
 
     private void settleAfterMash(BattleSession session) {

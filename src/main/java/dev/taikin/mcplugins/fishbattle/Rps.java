@@ -36,7 +36,7 @@ public enum Rps {
 
     public Material icon() {
         return switch (this) {
-            case GU -> Material.IRON_ORE;
+            case GU -> Material.RAW_IRON;
             case CHOKI -> Material.SHEARS;
             case PA -> Material.PAPER;
         };
