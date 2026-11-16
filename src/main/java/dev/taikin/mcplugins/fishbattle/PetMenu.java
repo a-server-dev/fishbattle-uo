@@ -23,7 +23,7 @@ public final class PetMenu {
     public static final int SLOT_RENAME = 6;
     public static final int SLOT_FOLLOW = 7;
     public static final int SLOT_TYPE = 8;
-    public static final int SLOT_COLLECT = 25;
+    public static final int SLOT_COLLECT = 17;
     public static final int SLOT_REMOVE = 26;
 
     private static final int SLOT_POWER_LABEL = 0;
@@ -36,8 +36,8 @@ public final class PetMenu {
     private static final int SLOT_EXP_BAR = 28;
     private static final int STAT_BARS = 4;
     private static final int EXP_BARS = 8;
-    private static final int[] HAND_ICON = {14, 16, 23};
-    private static final int[] SLOT_TECH = {15, 17, 24};
+    private static final int[] HAND_ICON = {14, 15, 16};
+    private static final int[] SLOT_TECH = {23, 24, 25};
 
     private static final int MAX_POWER = FishSpecies.allKeys().stream()
             .mapToInt(key -> FishSpecies.byKey(key).power()).max().orElse(100) + Fish.MAX_LEVEL;
