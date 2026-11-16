@@ -25,7 +25,7 @@ public final class PetMenu {
     public static final int SLOT_TYPE = 7;
     public static final int SLOT_STATS = 8;
     public static final int SLOT_COLLECT = 13;
-    public static final int SLOT_REMOVE = 14;
+    public static final int SLOT_RELEASE = 26;
 
     private static final int[] DIVIDER = {2, 11, 20};
 
@@ -57,6 +57,8 @@ public final class PetMenu {
     private final RenameDialog renameDialog;
     private final Map<UUID, UUID> lastPet = new HashMap<>();
     private final Map<UUID, UUID> openMenus = new HashMap<>();
+    private final Map<UUID, Long> releaseConfirm = new HashMap<>();
+    private static final long RELEASE_CONFIRM_MILLIS = 5000L;
 
     public PetMenu(FishMotion motion) {
         this.motion = motion;
@@ -68,7 +70,7 @@ public final class PetMenu {
             return;
         }
         lastPet.put(player.getUniqueId(), entity.getUniqueId());
-        Holder holder = new Holder(Page.MAIN);
+        Holder holder = new Holder(Page.MAIN, player.getUniqueId());
         Inventory inventory = Bukkit.createInventory(holder, SLOTS,
                 Component.text("魚の設定", NamedTextColor.DARK_AQUA));
         holder.inventory = inventory;
@@ -79,7 +81,7 @@ public final class PetMenu {
 
     private void openStats(Player player, Entity entity) {
         lastPet.put(player.getUniqueId(), entity.getUniqueId());
-        Holder holder = new Holder(Page.STATS);
+        Holder holder = new Holder(Page.STATS, player.getUniqueId());
         Inventory inventory = Bukkit.createInventory(holder, STATS_SLOTS,
                 Component.text("パラメータ", NamedTextColor.DARK_AQUA));
         holder.inventory = inventory;
@@ -131,8 +133,16 @@ public final class PetMenu {
                 List.of(follow ? "クリックでその場に留める" : "クリックで追従させる")));
         inventory.setItem(SLOT_COLLECT, actionItem(Material.BUCKET, "回収する",
                 NamedTextColor.AQUA, List.of("バケツに戻してインベントリへ")));
-        inventory.setItem(SLOT_REMOVE, actionItem(Material.BARRIER, "この魚を消す",
-                NamedTextColor.RED, List.of("元に戻せません")));
+        UUID viewer = holder == null ? null : holder.viewer;
+        if (isConfirmingRelease(viewer)) {
+            inventory.setItem(SLOT_RELEASE, actionItem(Material.BARRIER, "本当に逃がす？（もう一度クリック）",
+                    NamedTextColor.DARK_RED, List.of("5秒以内にもう一度クリックで確定",
+                            "戻すには別の場所をクリック")));
+        } else {
+            inventory.setItem(SLOT_RELEASE, actionItem(Material.LEAD, "逃がす",
+                    NamedTextColor.YELLOW, List.of("魚を野生に戻します（元に戻せません）",
+                            "クリック後にもう一度確認します")));
+        }
 
         inventory.setItem(SLOT_STATS, actionItem(Material.BOOK, "パラメータを見る",
                 NamedTextColor.LIGHT_PURPLE, List.of("強さ・体力・テクニック・EXPのバー")));
@@ -323,6 +333,9 @@ public final class PetMenu {
             player.closeInventory();
             return;
         }
+        if (slot != SLOT_RELEASE) {
+            releaseConfirm.remove(player.getUniqueId());
+        }
         switch (slot) {
             case SLOT_STATS -> {
                 openStats(player, entity);
@@ -350,10 +363,19 @@ public final class PetMenu {
                 close(player);
                 player.closeInventory();
             }
-            case SLOT_REMOVE -> {
+            case SLOT_RELEASE -> {
+                if (!isConfirmingRelease(player.getUniqueId())) {
+                    releaseConfirm.put(player.getUniqueId(),
+                            System.currentTimeMillis() + RELEASE_CONFIRM_MILLIS);
+                    player.sendMessage(Component.text("もう一度「逃がす」をクリックすると確定します（5秒以内）。",
+                            NamedTextColor.YELLOW));
+                    refreshIfOpen(player);
+                    return;
+                }
+                releaseConfirm.remove(player.getUniqueId());
                 motion.untrack(entity);
                 entity.remove();
-                player.sendMessage(Component.text("魚を消しました。", NamedTextColor.GRAY));
+                player.sendMessage(Component.text("魚を逃がしました。", NamedTextColor.GRAY));
                 close(player);
                 player.closeInventory();
             }
@@ -395,10 +417,27 @@ public final class PetMenu {
 
     public void close(Player player) {
         openMenus.remove(player.getUniqueId());
+        releaseConfirm.remove(player.getUniqueId());
     }
 
     public void closeMenuOnly(Player player) {
         openMenus.remove(player.getUniqueId());
+        releaseConfirm.remove(player.getUniqueId());
+    }
+
+    private boolean isConfirmingRelease(UUID viewer) {
+        if (viewer == null) {
+            return false;
+        }
+        Long until = releaseConfirm.get(viewer);
+        if (until == null) {
+            return false;
+        }
+        if (until < System.currentTimeMillis()) {
+            releaseConfirm.remove(viewer);
+            return false;
+        }
+        return true;
     }
 
     public boolean ownsMenu(Inventory inventory) {
@@ -564,10 +603,12 @@ public final class PetMenu {
 
     private static final class Holder implements org.bukkit.inventory.InventoryHolder {
         private final Page page;
+        private final UUID viewer;
         private Inventory inventory;
 
-        private Holder(Page page) {
+        private Holder(Page page, UUID viewer) {
             this.page = page;
+            this.viewer = viewer;
         }
 
         @Override
