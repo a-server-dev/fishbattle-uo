@@ -9,7 +9,6 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -48,6 +47,7 @@ public final class BattleManager {
     private final BattleEffects effects;
     private final EconomyHook economy;
     private final BattlePets pets;
+    private final BattleHandMenu handMenu;
     private final Map<UUID, Challenge> challenges = new HashMap<>();
     private final Map<UUID, BattleSession> sessions = new HashMap<>();
 
@@ -57,6 +57,11 @@ public final class BattleManager {
         this.economy = EconomyHook.load();
         this.effects = new BattleEffects(plugin);
         this.pets = new BattlePets(motion);
+        this.handMenu = new BattleHandMenu();
+    }
+
+    public BattleHandMenu handMenu() {
+        return handMenu;
     }
 
     public boolean inBattle(UUID player) {
@@ -362,9 +367,9 @@ public final class BattleManager {
 
     private void startCountdown(BattleSession session, Player a, Player b) {
         session.setPhase(BattleSession.Phase.COUNTDOWN);
-        broadcast(session, Component.text("クリックしろ！", NamedTextColor.RED));
-        effects.countdownTitle(a, "クリックしろ！", COUNTDOWN_SECONDS);
-        effects.countdownTitle(b, "クリックしろ！", COUNTDOWN_SECONDS);
+        broadcast(session, Component.text("手を選べ！", NamedTextColor.RED));
+        effects.countdownTitle(a, "手を選べ！", COUNTDOWN_SECONDS);
+        effects.countdownTitle(b, "手を選べ！", COUNTDOWN_SECONDS);
         for (int i = 1; i <= COUNTDOWN_SECONDS; i++) {
             int remaining = COUNTDOWN_SECONDS - i + 1;
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
@@ -384,7 +389,7 @@ public final class BattleManager {
             broadcast(session, Component.text("スタート！", NamedTextColor.GREEN));
             effects.countdownTitle(a, "スタート！", 1);
             effects.countdownTitle(b, "スタート！", 1);
-            startMashing(session, a, b);
+            beginChoosing(session);
         }, (COUNTDOWN_SECONDS + 1) * 20L);
     }
 
@@ -487,16 +492,16 @@ public final class BattleManager {
         }, 2L, 2L));
     }
 
-    private void startMashing(BattleSession session, Player a, Player b) {
-        if (session.phase() != BattleSession.Phase.COUNTDOWN) {
+    private void startMashing(BattleSession session) {
+        if (session.phase() != BattleSession.Phase.REVEALING) {
             return;
         }
         session.setPhase(BattleSession.Phase.MASHING);
         session.resetMash();
-        broadcast(session, Component.text("左クリックを連打しろ！ " + (MASH_MILLIS / 1000) + "秒間"
-                + "（EXPバー＝自分 / ボスバー＝相手）", NamedTextColor.WHITE));
-        promptMash(a);
-        promptMash(b);
+        broadcast(session, Component.text("勝った側とあいこは左クリックを連打しろ！ " + (MASH_MILLIS / 1000)
+                + "秒間（EXPバー＝自分 / ボスバー＝相手）", NamedTextColor.WHITE));
+        promptMash(Bukkit.getPlayer(session.playerA()), session.needsMash(session.playerA()));
+        promptMash(Bukkit.getPlayer(session.playerB()), session.needsMash(session.playerB()));
 
         if (session.npcId() != null) {
             UUID npc = session.npcId();
@@ -505,7 +510,8 @@ public final class BattleManager {
                 session.setNpcTask(null);
             }
             BukkitTask npcTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-                if (session.phase() != BattleSession.Phase.MASHING) {
+                if (session.phase() != BattleSession.Phase.MASHING
+                        || !session.needsMash(npc)) {
                     return;
                 }
                 if (ThreadLocalRandom.current().nextDouble() < 0.85) {
@@ -516,15 +522,23 @@ public final class BattleManager {
         }
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            if (session.closed()) {
+            if (session.closed() || session.phase() != BattleSession.Phase.MASHING) {
                 return;
             }
-            beginChoosing(session);
+            if (session.npcTask() != null) {
+                session.npcTask().cancel();
+                session.setNpcTask(null);
+            }
+            settleAfterMash(session);
         }, MASH_TICKS);
     }
 
-    private void promptMash(Player player) {
+    private void promptMash(Player player, boolean needs) {
         if (player == null) {
+            return;
+        }
+        if (!needs) {
+            player.sendActionBar(Component.text("相手の連打を待っています…", NamedTextColor.GRAY));
             return;
         }
         player.sendMessage(Component.text()
@@ -533,8 +547,29 @@ public final class BattleManager {
                 .build());
     }
 
+    private void settleAfterMash(BattleSession session) {
+        Player pa = Bukkit.getPlayer(session.playerA());
+        Player pb = Bukkit.getPlayer(session.playerB());
+        session.setPhase(BattleSession.Phase.ATTACKING);
+        if (session.attacker() == null) {
+            resolveTie(session, pa, pb);
+            return;
+        }
+        UUID attackerId = session.attacker();
+        UUID defenderId = session.opponentOf(attackerId);
+        broadcast(session, Component.text(nameOf(session, attackerId) + " の攻撃！",
+                NamedTextColor.GOLD));
+        Player defender = Bukkit.getPlayer(defenderId);
+        if (defender != null) {
+            defender.sendActionBar(Component.text("相手の攻撃…", NamedTextColor.DARK_GRAY));
+        }
+        scheduleAttack(session, attackerId, defenderId,
+                session.charge(attackerId), session.charge(defenderId),
+                session.clicks(attackerId), 1.0);
+    }
+
     private void beginChoosing(BattleSession session) {
-        if (session.phase() != BattleSession.Phase.MASHING) {
+        if (session.phase() != BattleSession.Phase.COUNTDOWN) {
             return;
         }
         if (session.npcTask() != null) {
@@ -548,17 +583,7 @@ public final class BattleManager {
         session.setOrder(order);
         broadcast(session, Component.text("手を選べ！ " + session.order().stream()
                 .map(Rps::emoji).collect(Collectors.joining(" "))
-                + "（この順に並んでいます）", NamedTextColor.GOLD));
-        broadcast(session, Component.text()
-                .append(Component.text("気合  ", NamedTextColor.DARK_GRAY))
-                .append(Component.text(nameOf(session, session.playerA()) + " "
-                        + Math.round(session.charge(session.playerA()) * 100) + "%",
-                        NamedTextColor.GREEN))
-                .append(Component.text("  ／  ", NamedTextColor.DARK_GRAY))
-                .append(Component.text(nameOf(session, session.playerB()) + " "
-                        + Math.round(session.charge(session.playerB()) * 100) + "%",
-                        NamedTextColor.RED))
-                .build());
+                + "（GUIの並び順）", NamedTextColor.GOLD));
         Player a = Bukkit.getPlayer(session.playerA());
         Player b = Bukkit.getPlayer(session.playerB());
         if (a != null) {
@@ -567,8 +592,6 @@ public final class BattleManager {
         if (b != null) {
             promptChoice(session, b);
         }
-        broadcast(session, Component.text("1/2/3・チャットで選んで、右クリックかスニークで決定（10秒で自動確定）",
-                NamedTextColor.GRAY));
         if (session.choiceTask() != null) {
             session.choiceTask().cancel();
         }
@@ -582,14 +605,13 @@ public final class BattleManager {
                 if (session.choiceOf(id) != null) {
                     continue;
                 }
-                Rps preview = session.previewOf(id);
-                Rps hand = preview != null ? preview : values[ThreadLocalRandom.current().nextInt(values.length)];
+                Rps hand = values[ThreadLocalRandom.current().nextInt(values.length)];
                 session.setChoice(id, hand);
                 Player p = Bukkit.getPlayer(id);
                 if (p != null && !session.isNpc(id)) {
-                    p.sendMessage(Component.text(preview != null
-                            ? "時間切れ！ 選択中の手で確定しました。"
-                            : "時間切れ！ 手がランダムで選ばれました。", NamedTextColor.YELLOW));
+                    handMenu.close(p);
+                    p.sendMessage(Component.text("時間切れ！ 手がランダムで選ばれました。",
+                            NamedTextColor.YELLOW));
                 }
                 picked = true;
             }
@@ -599,7 +621,7 @@ public final class BattleManager {
         }, CHOICE_TIMEOUT_TICKS));
         if (session.npcId() != null) {
             UUID npc = session.npcId();
-            long delay = 20L + ThreadLocalRandom.current().nextInt(30);
+            long delay = 30L + ThreadLocalRandom.current().nextInt(40);
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 if (session.closed() || session.phase() != BattleSession.Phase.CHOOSING
                         || session.choiceOf(npc) != null) {
@@ -615,81 +637,24 @@ public final class BattleManager {
     }
 
     private void promptChoice(BattleSession session, Player player) {
-        player.sendActionBar(Component.text("1/2/3・チャットで選んで右クリックかスニーク", NamedTextColor.GOLD));
-        TextComponent.Builder builder = Component.text();
-        boolean first = true;
-        for (Rps rps : session.order()) {
-            if (!first) {
-                builder.append(Component.text("   "));
+        if (session.isNpc(player.getUniqueId())) {
+            return;
+        }
+        player.sendActionBar(Component.text("GUIで手を選べ！", NamedTextColor.GOLD));
+        handMenu.open(player, session.order(), hand -> {
+            if (session.closed() || session.phase() != BattleSession.Phase.CHOOSING) {
+                return;
             }
-            first = false;
-            builder.append(button(rps.emoji(), rps.color(), commandFor(rps),
-                    rps.label() + "で勝負"));
-        }
-        player.sendMessage(builder.build());
-    }
-
-    private static String commandFor(Rps rps) {
-        return switch (rps) {
-            case GU -> "/uo rps gu";
-            case CHOKI -> "/uo rps choki";
-            case PA -> "/uo rps pa";
-        };
-    }
-
-    public boolean isChoosing(UUID player) {
-        BattleSession session = sessions.get(player);
-        return session != null && session.phase() == BattleSession.Phase.CHOOSING;
-    }
-
-    public void selectBySlot(Player player, int slot) {
-        BattleSession session = sessions.get(player.getUniqueId());
-        if (session == null || session.phase() != BattleSession.Phase.CHOOSING) {
-            return;
-        }
-        if (slot < 0 || slot >= session.order().size()) {
-            return;
-        }
-        setPreview(player, session, session.order().get(slot));
-    }
-
-    private void setPreview(Player player, BattleSession session, Rps hand) {
-        if (session.choiceOf(player.getUniqueId()) != null) {
-            return;
-        }
-        if (session.phase() != BattleSession.Phase.CHOOSING) {
-            return;
-        }
-        session.setPreview(player.getUniqueId(), hand);
-        effects.previewTitle(player, hand);
-        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_HAT, 0.5f, 1.5f);
-    }
-
-    public boolean confirmSneak(Player player) {
-        return confirm(player);
-    }
-
-    public boolean confirmPreview(Player player) {
-        return confirm(player);
-    }
-
-    private boolean confirm(Player player) {
-        BattleSession session = sessions.get(player.getUniqueId());
-        if (session == null || session.phase() != BattleSession.Phase.CHOOSING) {
-            return false;
-        }
-        Rps hand = session.previewOf(player.getUniqueId());
-        if (hand == null) {
-            int held = player.getInventory().getHeldItemSlot();
-            if (held < 0 || held >= session.order().size()) {
-                player.sendActionBar(Component.text("1-3で手を選んでから右クリック（またはスニーク）で決定",
-                        NamedTextColor.YELLOW));
-                return true;
+            choose(player, hand);
+        }, () -> Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (session.closed() || session.phase() != BattleSession.Phase.CHOOSING
+                    || session.choiceOf(player.getUniqueId()) != null) {
+                return;
             }
-            hand = session.order().get(held);
-        }
-        choose(player, hand);
-        return true;
+            player.sendMessage(Component.text("まだ手を選んでいません。もう一度GUIで選んでください。",
+                    NamedTextColor.YELLOW));
+            promptChoice(session, player);
+        }, 10L));
     }
 
     public void preview(Player player, Rps choice) {
@@ -702,7 +667,7 @@ public final class BattleManager {
             player.sendMessage(Component.text("すでに確定しています。", NamedTextColor.GRAY));
             return;
         }
-        setPreview(player, session, choice);
+        choose(player, choice);
     }
 
     private void choose(Player player, Rps choice) {
@@ -716,6 +681,7 @@ public final class BattleManager {
             return;
         }
         session.setChoice(player.getUniqueId(), choice);
+        handMenu.close(player);
         player.sendMessage(Component.text("「" + choice.label() + "」で確定。", choice.color()));
         player.sendActionBar(Component.text("相手の選択を待っています…", NamedTextColor.GRAY));
 
@@ -728,7 +694,7 @@ public final class BattleManager {
         if (session.phase() != BattleSession.Phase.CHOOSING || !session.bothChosen()) {
             return;
         }
-        session.setPhase(BattleSession.Phase.ATTACKING);
+        session.setPhase(BattleSession.Phase.REVEALING);
         Rps a = session.choiceOf(session.playerA());
         Rps b = session.choiceOf(session.playerB());
         Player pa = Bukkit.getPlayer(session.playerA());
@@ -738,7 +704,7 @@ public final class BattleManager {
         effects.ownHand(pb, b);
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            if (session.closed() || session.phase() != BattleSession.Phase.ATTACKING) {
+            if (session.closed() || session.phase() != BattleSession.Phase.REVEALING) {
                 return;
             }
             revealAndResolve(session, pa, pb, a, b);
@@ -774,23 +740,29 @@ public final class BattleManager {
         effects.resultSound(pb, a == b ? null : b.beats(a));
 
         if (a == b) {
-            resolveTie(session, pa, pb);
-            return;
+            session.setAttacker(null);
+            session.setNeedsMash(session.playerA(), true);
+            session.setNeedsMash(session.playerB(), true);
+            broadcast(session, Component.text("あいこ！ 連打して押し込め！", NamedTextColor.GOLD));
+        } else {
+            UUID winnerId = a.beats(b) ? session.playerA() : session.playerB();
+            UUID loserId = session.opponentOf(winnerId);
+            session.setAttacker(winnerId);
+            session.setNeedsMash(winnerId, true);
+            session.setNeedsMash(loserId, false);
+            broadcast(session, Component.text(nameOf(session, winnerId) + " の勝ち！ "
+                    + "連打して攻撃を決めろ！", NamedTextColor.GOLD));
+            Player loser = Bukkit.getPlayer(loserId);
+            if (loser != null) {
+                loser.sendActionBar(Component.text("相手の攻撃…", NamedTextColor.DARK_GRAY));
+            }
         }
-
-        UUID attackerId = a.beats(b) ? session.playerA() : session.playerB();
-        session.setAttacker(attackerId);
-        Player defender = Bukkit.getPlayer(session.opponentOf(attackerId));
-        double attackerCharge = session.charge(attackerId);
-        double defenderCharge = session.charge(session.opponentOf(attackerId));
-        int attackerClicks = session.clicks(attackerId);
-        broadcast(session, Component.text(nameOf(session, attackerId) + " の勝ち！ 攻撃！",
-                NamedTextColor.GOLD));
-        if (defender != null) {
-            defender.sendActionBar(Component.text("相手の攻撃…", NamedTextColor.DARK_GRAY));
-        }
-        scheduleAttack(session, attackerId, session.opponentOf(attackerId),
-                attackerCharge, defenderCharge, attackerClicks, 1.0);
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (session.closed() || session.phase() != BattleSession.Phase.REVEALING) {
+                return;
+            }
+            startMashing(session);
+        }, REVEAL_STEP_TICKS);
     }
 
     private void scheduleAttack(BattleSession session, UUID attackerId, UUID defenderId,
@@ -812,7 +784,7 @@ public final class BattleManager {
         double gap = Math.abs(chargeA - chargeB);
 
         if (gap <= 0.0) {
-            broadcast(session, Component.text("あいこで互角！ もう一度連打から！", NamedTextColor.YELLOW));
+            broadcast(session, Component.text("あいこで互角！ 手を選び直し！", NamedTextColor.YELLOW));
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 if (session.closed()) {
                     return;
@@ -841,12 +813,16 @@ public final class BattleManager {
 
     public boolean isMashing(Player player) {
         BattleSession session = sessions.get(player.getUniqueId());
-        return session != null && session.phase() == BattleSession.Phase.MASHING;
+        return session != null && session.phase() == BattleSession.Phase.MASHING
+                && session.needsMash(player.getUniqueId());
     }
 
     public void mash(Player player) {
         BattleSession session = sessions.get(player.getUniqueId());
         if (session == null || session.phase() != BattleSession.Phase.MASHING) {
+            return;
+        }
+        if (!session.needsMash(player.getUniqueId())) {
             return;
         }
         if (session.registerMash(player.getUniqueId(), System.currentTimeMillis())) {
@@ -1010,6 +986,14 @@ public final class BattleManager {
     private void cleanup(BattleSession session) {
         session.close();
         cleanupTasks(session);
+        Player a = Bukkit.getPlayer(session.playerA());
+        Player b = Bukkit.getPlayer(session.playerB());
+        if (a != null) {
+            handMenu.close(a);
+        }
+        if (b != null) {
+            handMenu.close(b);
+        }
         sessions.remove(session.playerA());
         sessions.remove(session.playerB());
         if (session.villagerId() != null) {

@@ -8,11 +8,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerAnimationType;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerToggleSneakEvent;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.world.EntitiesLoadEvent;
 
 public final class BattleListener implements Listener {
@@ -56,36 +52,9 @@ public final class BattleListener implements Listener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
-    public void onItemHeld(PlayerItemHeldEvent event) {
-        if (!battles.isChoosing(event.getPlayer().getUniqueId())) {
-            return;
-        }
-        battles.selectBySlot(event.getPlayer(), event.getNewSlot());
-    }
-
-    @EventHandler(priority = org.bukkit.event.EventPriority.LOWEST)
-    public void onInteract(PlayerInteractEvent event) {
-        Action action = event.getAction();
-        if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) {
-            return;
-        }
-        if (battles.confirmPreview(event.getPlayer())) {
-            event.setCancelled(true);
-            event.setUseItemInHand(org.bukkit.event.Event.Result.DENY);
-            event.setUseInteractedBlock(org.bukkit.event.Event.Result.DENY);
-        }
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    public void onSneak(PlayerToggleSneakEvent event) {
-        if (event.isSneaking() && battles.confirmSneak(event.getPlayer())) {
-            return;
-        }
-    }
-
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
+        battles.handMenu().close(event.getPlayer());
         battles.endQuietly(event.getPlayer());
     }
 

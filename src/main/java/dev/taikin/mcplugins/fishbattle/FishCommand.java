@@ -236,7 +236,7 @@ public final class FishCommand {
         sender.sendMessage(Component.text("/uo battle demo      NPCとデモバトル", NamedTextColor.GRAY));
         sender.sendMessage(Component.text("/uo battle stop      バトルを降参して終了", NamedTextColor.GRAY));
         sender.sendMessage(Component.text("/uo accept | deny    申し込みを受ける / 断る", NamedTextColor.GRAY));
-        sender.sendMessage(Component.text("/uo gu | choki | pa  じゃんけんの手を選ぶ", NamedTextColor.GRAY));
+        sender.sendMessage(Component.text("/uo gu | choki | pa  じゃんけんの手を選ぶ（GUIでも可）", NamedTextColor.GRAY));
         sender.sendMessage(Component.text("/uo mash             攻撃チャンスで連打", NamedTextColor.GRAY));
         sender.sendMessage(Component.text("/uo run              降参", NamedTextColor.GRAY));
         sender.sendMessage(Component.text("/uo info            個体情報", NamedTextColor.GRAY));

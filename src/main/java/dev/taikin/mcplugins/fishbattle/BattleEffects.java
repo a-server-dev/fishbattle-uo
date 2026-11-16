@@ -66,17 +66,9 @@ final class BattleEffects {
         }
         player.showTitle(Title.title(
                 Component.text(text, NamedTextColor.GOLD),
-                Component.text("左クリックを連打しろ！", NamedTextColor.GRAY),
+                Component.text("手を選べ！", NamedTextColor.GRAY),
                 Title.Times.times(Duration.ofMillis(200),
                         Duration.ofSeconds(Math.max(1, staySeconds)), Duration.ofMillis(300))));
-    }
-
-    void previewTitle(Player player, Rps hand) {
-        player.showTitle(Title.title(
-                Component.text(hand.emoji() + " " + hand.label(), hand.color()),
-                Component.text("右クリックで決定（10秒で自動確定）", NamedTextColor.GRAY),
-                Title.Times.times(Duration.ofMillis(80), Duration.ofSeconds(2),
-                        Duration.ofMillis(150))));
     }
 
     void ownHand(Player player, Rps hand) {

@@ -10,8 +10,9 @@ public final class BattleSession {
     public enum Phase {
         IDLE,
         COUNTDOWN,
-        MASHING,
         CHOOSING,
+        REVEALING,
+        MASHING,
         ATTACKING,
         FINISHED
     }
@@ -25,13 +26,13 @@ public final class BattleSession {
     private Rps choiceA;
     private Rps choiceB;
     private List<Rps> order = List.of(Rps.GU, Rps.CHOKI, Rps.PA);
-    private Rps previewA;
-    private Rps previewB;
     private UUID attacker;
     private int clicksA;
     private int clicksB;
     private double chargeA;
     private double chargeB;
+    private boolean mashA = true;
+    private boolean mashB = true;
     private long lastMashAtA;
     private long lastMashAtB;
     private float savedExpA;
@@ -218,18 +219,6 @@ public final class BattleSession {
         this.order = order;
     }
 
-    public Rps previewOf(UUID player) {
-        return player.equals(a) ? previewA : previewB;
-    }
-
-    public void setPreview(UUID player, Rps hand) {
-        if (player.equals(a)) {
-            previewA = hand;
-        } else {
-            previewB = hand;
-        }
-    }
-
     public boolean bothChosen() {
         return choiceA != null && choiceB != null;
     }
@@ -237,8 +226,6 @@ public final class BattleSession {
     public void clearChoices() {
         choiceA = null;
         choiceB = null;
-        previewA = null;
-        previewB = null;
     }
 
     public UUID attacker() {
@@ -264,6 +251,22 @@ public final class BattleSession {
         this.chargeB = 0.0;
         this.lastMashAtA = 0L;
         this.lastMashAtB = 0L;
+    }
+
+    public boolean needsMash(UUID player) {
+        return player.equals(a) ? mashA : mashB;
+    }
+
+    public void setNeedsMash(UUID player, boolean needs) {
+        if (player.equals(a)) {
+            mashA = needs;
+        } else {
+            mashB = needs;
+        }
+    }
+
+    public boolean anyNeedsMash() {
+        return mashA || mashB;
     }
 
     public boolean registerMash(UUID player, long now) {

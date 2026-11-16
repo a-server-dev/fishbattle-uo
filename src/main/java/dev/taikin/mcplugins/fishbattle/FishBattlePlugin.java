@@ -28,6 +28,7 @@ public final class FishBattlePlugin extends JavaPlugin {
         capture.setBattles(battles);
         getServer().getPluginManager().registerEvents(capture, this);
         getServer().getPluginManager().registerEvents(new BattleListener(battles, motion), this);
+        getServer().getPluginManager().registerEvents(battles.handMenu(), this);
         getServer().getPluginManager().registerEvents(new PetMenuListener(this, menu), this);
 
         FishCommand command = new FishCommand(battles, motion, menu);
