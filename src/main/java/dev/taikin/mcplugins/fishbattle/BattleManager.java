@@ -31,7 +31,7 @@ public final class BattleManager {
     private static final long MASH_MILLIS = 3000L;
     private static final int MASH_TICKS = (int) (MASH_MILLIS / 50L);
     private static final long CHOICE_GUI_DELAY_TICKS = 10L;
-    private static final int REVEAL_COUNTDOWN_TICKS = 5;
+    private static final int REVEAL_COUNTDOWN_TICKS = 10;
     private static final int RESULT_HOLD_TICKS = 60;
     private static final int ATTACK_DELAY_TICKS = 20;
     private static final int REVEAL_STEP_TICKS = 15;
