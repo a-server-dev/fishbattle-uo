@@ -38,4 +38,16 @@ public enum Rps {
                 || (this == CHOKI && other == PA)
                 || (this == PA && other == GU);
     }
+
+    public static Rps parse(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        return switch (raw.toLowerCase(java.util.Locale.ROOT)) {
+            case "gu", "g", "rock" -> GU;
+            case "choki", "c", "scissors" -> CHOKI;
+            case "pa", "p", "paper" -> PA;
+            default -> null;
+        };
+    }
 }

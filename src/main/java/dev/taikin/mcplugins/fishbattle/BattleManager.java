@@ -641,7 +641,8 @@ public final class BattleManager {
             return;
         }
         player.sendActionBar(Component.text("GUIで手を選べ！", NamedTextColor.GOLD));
-        handMenu.open(player, session.order(), hand -> {
+        Fish mine = session.fishOf(player.getUniqueId());
+        handMenu.open(player, session.order(), mine == null ? java.util.Map.of() : mine.moves(), hand -> {
             if (session.closed() || session.phase() != BattleSession.Phase.CHOOSING) {
                 return;
             }
@@ -845,7 +846,7 @@ public final class BattleManager {
         Fish target = session.fishOf(defenderId);
         double multiplier = attacker.type().multiplier(target.type());
 
-        Technique technique = DamageCalc.bestTechnique(attacker);
+        Technique technique = DamageCalc.bestTechnique(attacker, session.choiceOf(attackerId));
         double techniqueBonus = technique != null ? technique.bonus() : 1.0;
         int damage = (int) Math.max(1, Math.round(DamageCalc.damage(attacker, target, attackerCharge, defenderCharge,
                 multiplier * techniqueBonus) * clashScale));

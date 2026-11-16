@@ -92,9 +92,10 @@ public final class FishCommand {
                         .then(Commands.literal("train")
                                 .executes(context -> petTrain(context.getSource().getSender())))
                         .then(Commands.literal("untrain")
-                                .then(Commands.argument("slot", IntegerArgumentType.integer(1, 3))
+                                .then(Commands.argument("hand", StringArgumentType.word())
+                                        .suggests(this::suggestHands)
                                         .executes(context -> petUntrain(context.getSource().getSender(),
-                                                IntegerArgumentType.getInteger(context, "slot"))))))
+                                                StringArgumentType.getString(context, "hand"))))))
                 .then(Commands.literal("species")
                         .executes(context -> species(context.getSource().getSender())))
                 .then(Commands.literal("bucket")
@@ -251,12 +252,7 @@ public final class FishCommand {
         if (!(sender instanceof Player player)) {
             return 0;
         }
-        Rps choice = switch (hand.toLowerCase(Locale.ROOT)) {
-            case "gu", "g", "rock" -> Rps.GU;
-            case "choki", "c", "scissors" -> Rps.CHOKI;
-            case "pa", "p", "paper" -> Rps.PA;
-            default -> null;
-        };
+        Rps choice = Rps.parse(hand);
         if (choice == null) {
             player.sendMessage(Component.text(PREFIX + "gu / choki / pa のいずれかです。", NamedTextColor.RED));
             return 0;
@@ -313,11 +309,15 @@ public final class FishCommand {
         return 1;
     }
 
-    private int petUntrain(org.bukkit.command.CommandSender sender, int slot) {
+    private int petUntrain(org.bukkit.command.CommandSender sender, String handName) {
         if (!(sender instanceof Player player)) {
             return 0;
         }
-        menu.untrain(player, slot);
+        boolean[] found = {false};
+        menu.untrain(player, handName, () -> found[0] = true);
+        if (!found[0]) {
+            player.sendMessage(Component.text(PREFIX + "gu / choki / pa のいずれかです。", NamedTextColor.RED));
+        }
         return 1;
     }
 

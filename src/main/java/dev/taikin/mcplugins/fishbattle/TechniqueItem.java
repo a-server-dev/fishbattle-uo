@@ -1,6 +1,5 @@
 package dev.taikin.mcplugins.fishbattle;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import net.kyori.adventure.text.Component;
@@ -23,6 +22,7 @@ public final class TechniqueItem {
             meta.customName(Component.text("技カード: " + technique.name(), technique.color())
                     .decoration(TextDecoration.ITALIC, false));
             meta.lore(List.of(
+                    line(technique.hand().emoji() + " " + technique.hand().label() + " 用", technique.hand().color()),
                     line("威力 x" + String.format("%.2f", technique.bonus()), technique.color()),
                     line(technique.description(), NamedTextColor.GRAY),
                     line("魚を持って右クリックで装備", NamedTextColor.DARK_GRAY)));
@@ -40,7 +40,7 @@ public final class TechniqueItem {
     }
 
     public static ItemStack random() {
-        List<Technique> all = new ArrayList<>(Technique.all());
+        List<Technique> all = Technique.all();
         return create(all.get(ThreadLocalRandom.current().nextInt(all.size())));
     }
 

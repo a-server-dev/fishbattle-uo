@@ -19,19 +19,35 @@ import org.bukkit.persistence.PersistentDataType;
 
 public final class PetMenu {
 
-    public static final int SLOT_INFO = 4;
-    public static final int SLOT_POWER = 10;
-    public static final int SLOT_HP = 11;
-    public static final int SLOT_TECHNIQUE = 12;
-    public static final int SLOT_TYPE = 14;
-    public static final int SLOT_RENAME = 15;
-    public static final int SLOT_FOLLOW = 16;
-    public static final int SLOT_TECH1 = 21;
-    public static final int SLOT_TECH2 = 22;
-    public static final int SLOT_TECH3 = 23;
+    public static final int SLOT_INFO = 5;
+    public static final int SLOT_RENAME = 6;
+    public static final int SLOT_FOLLOW = 7;
+    public static final int SLOT_TYPE = 8;
     public static final int SLOT_COLLECT = 25;
     public static final int SLOT_REMOVE = 26;
 
+    private static final int SLOT_POWER_LABEL = 0;
+    private static final int SLOT_POWER_BAR = 1;
+    private static final int SLOT_HP_LABEL = 9;
+    private static final int SLOT_HP_BAR = 10;
+    private static final int SLOT_TECH_LABEL = 18;
+    private static final int SLOT_TECH_BAR = 19;
+    private static final int SLOT_EXP_LABEL = 27;
+    private static final int SLOT_EXP_BAR = 28;
+    private static final int STAT_BARS = 4;
+    private static final int EXP_BARS = 8;
+    private static final int[] HAND_ICON = {14, 16, 23};
+    private static final int[] SLOT_TECH = {15, 17, 24};
+
+    private static final int MAX_POWER = FishSpecies.allKeys().stream()
+            .mapToInt(key -> FishSpecies.byKey(key).power()).max().orElse(100) + Fish.MAX_LEVEL;
+    private static final int MAX_HP = FishSpecies.allKeys().stream()
+            .mapToInt(key -> FishSpecies.byKey(key).hp()).max().orElse(100)
+            + (Fish.MAX_LEVEL - 1) * 2;
+    private static final int MAX_TECH = FishSpecies.allKeys().stream()
+            .mapToInt(key -> FishSpecies.byKey(key).technique()).max().orElse(100) + Fish.MAX_LEVEL / 2;
+
+    private static final int SLOTS = 36;
     private final FishMotion motion;
     private final RenameDialog renameDialog;
     private final Map<UUID, UUID> lastPet = new HashMap<>();
@@ -50,7 +66,7 @@ public final class PetMenu {
         openMenus.put(player.getUniqueId(), entity.getUniqueId());
 
         Holder holder = new Holder();
-        Inventory inventory = Bukkit.createInventory(holder, 27,
+        Inventory inventory = Bukkit.createInventory(holder, SLOTS,
                 Component.text("魚の設定", NamedTextColor.DARK_AQUA));
         holder.inventory = inventory;
         render(inventory, entity);
@@ -80,12 +96,6 @@ public final class PetMenu {
             return;
         }
         inventory.setItem(SLOT_INFO, infoItem(fish));
-        inventory.setItem(SLOT_POWER, statItem(Material.IRON_SWORD, "強さ", fish.power(),
-                NamedTextColor.RED, "与えるダメージの大きさ"));
-        inventory.setItem(SLOT_HP, statItem(Material.GOLDEN_APPLE, "体力", fish.maxHp(),
-                NamedTextColor.GREEN, "HPの高さ（現在 " + fish.hp() + "/" + fish.maxHp() + "）"));
-        inventory.setItem(SLOT_TECHNIQUE, statItem(Material.FEATHER, "テクニック", fish.technique(),
-                NamedTextColor.AQUA, "気合の溜まりやすさ"));
         inventory.setItem(SLOT_TYPE, typeItem(fish));
         inventory.setItem(SLOT_RENAME, actionItem(Material.NAME_TAG, "名前を変える",
                 NamedTextColor.GREEN, List.of("チャットに新しい名前を入力")));
@@ -99,16 +109,109 @@ public final class PetMenu {
         inventory.setItem(SLOT_REMOVE, actionItem(Material.BARRIER, "この魚を消す",
                 NamedTextColor.RED, List.of("元に戻せません")));
 
-        List<String> ids = fish.techniques();
-        for (int i = 0; i < 3; i++) {
-            int slot = SLOT_TECH1 + i;
-            if (i < ids.size()) {
-                Technique technique = Technique.byId(ids.get(i));
-                inventory.setItem(slot, techniqueItem(technique, i));
+        statRow(inventory, SLOT_POWER_LABEL, SLOT_POWER_BAR, Material.IRON_SWORD,
+                "強さ", fish.power(), MAX_POWER, NamedTextColor.RED,
+                "与えるダメージの大きさ");
+        statRow(inventory, SLOT_HP_LABEL, SLOT_HP_BAR, Material.GOLDEN_APPLE,
+                "体力", fish.maxHp(), MAX_HP, NamedTextColor.GREEN,
+                "HPの高さ（現在 " + fish.hp() + "/" + fish.maxHp() + "）");
+        statRow(inventory, SLOT_TECH_LABEL, SLOT_TECH_BAR, Material.FEATHER,
+                "テクニック", fish.technique(), MAX_TECH, NamedTextColor.AQUA,
+                "気合の溜まりやすさ");
+        expRow(inventory, fish);
+
+        List<Rps> hands = List.of(Rps.GU, Rps.CHOKI, Rps.PA);
+        for (int i = 0; i < hands.size(); i++) {
+            Rps hand = hands.get(i);
+            Technique technique = fish.techniqueFor(hand);
+            inventory.setItem(HAND_ICON[i], handItem(hand, technique));
+            if (technique != null) {
+                inventory.setItem(SLOT_TECH[i], techniqueItem(technique, hand));
             } else {
-                inventory.setItem(slot, emptyTechniqueItem(i));
+                inventory.setItem(SLOT_TECH[i], emptyTechniqueItem(hand));
             }
         }
+    }
+
+    private ItemStack handItem(Rps hand, Technique technique) {
+        Material material = switch (hand) {
+            case GU -> Material.BLUE_DYE;
+            case CHOKI -> Material.RED_DYE;
+            case PA -> Material.YELLOW_DYE;
+        };
+        ItemStack item = new ItemStack(material);
+        item.editMeta(meta -> {
+            meta.customName(Component.text(hand.emoji() + " " + hand.label() + "の技",
+                    hand.color()).decoration(TextDecoration.ITALIC, false));
+            meta.lore(List.of(line(technique != null
+                    ? "装備: " + technique.name()
+                    : "この手で勝つと右の技が発動", NamedTextColor.GRAY)));
+        });
+        return item;
+    }
+
+    private void statRow(Inventory inventory, int labelSlot, int barSlot, Material icon,
+            String name, int value, int max, NamedTextColor color, String hint) {
+        int clamped = Math.max(0, Math.min(value, max));
+        ItemStack label = new ItemStack(icon);
+        label.editMeta(meta -> {
+            meta.customName(Component.text(name + ": " + value, color)
+                    .decoration(TextDecoration.ITALIC, false));
+            meta.lore(List.of(line(hint, NamedTextColor.GRAY),
+                    line("最大 " + max + " 中の " + clamped, NamedTextColor.DARK_GRAY)));
+        });
+        inventory.setItem(labelSlot, label);
+        int filled = max <= 0 ? 0 : (int) Math.round(STAT_BARS * (double) clamped / max);
+        for (int i = 0; i < STAT_BARS; i++) {
+            inventory.setItem(barSlot + i, barPiece(i < filled, color, name, value, max));
+        }
+    }
+
+    private void expRow(Inventory inventory, Fish fish) {
+        int need = Math.max(1, fish.nextExp());
+        boolean capped = fish.level() >= Fish.MAX_LEVEL;
+        int have = capped ? need : Math.max(0, Math.min(fish.exp(), need));
+        ItemStack label = new ItemStack(Material.EXPERIENCE_BOTTLE);
+        label.editMeta(meta -> {
+            meta.customName(Component.text("EXP: " + have + " / " + need
+                    + "（Lv" + fish.level() + (capped ? " MAX" : "") + "）",
+                    NamedTextColor.AQUA).decoration(TextDecoration.ITALIC, false));
+            meta.lore(List.of(line(capped ? "最大レベルです" : "つぎのレベルまで " + (need - have) + " EXP",
+                    NamedTextColor.GRAY)));
+        });
+        inventory.setItem(SLOT_EXP_LABEL, label);
+        int filled = capped ? EXP_BARS : (int) Math.round(EXP_BARS * (double) have / need);
+        for (int i = 0; i < EXP_BARS; i++) {
+            inventory.setItem(SLOT_EXP_BAR + i,
+                    barPiece(i < filled, NamedTextColor.AQUA, "EXP", have, need));
+        }
+    }
+
+    private ItemStack barPiece(boolean filled, NamedTextColor color, String name, int value, int max) {
+        Material material = filled ? glassFor(color) : Material.LIGHT_GRAY_STAINED_GLASS_PANE;
+        ItemStack item = new ItemStack(material);
+        item.editMeta(meta -> {
+            meta.customName(Component.text(name + " " + value + " / " + max,
+                    filled ? color : NamedTextColor.DARK_GRAY).decoration(TextDecoration.ITALIC, false));
+            meta.lore(List.of(line(filled ? "■■■■■" : "□□□□□", filled ? color : NamedTextColor.GRAY)));
+        });
+        return item;
+    }
+
+    private static Material glassFor(NamedTextColor color) {
+        if (color == NamedTextColor.RED) {
+            return Material.RED_STAINED_GLASS_PANE;
+        }
+        if (color == NamedTextColor.GREEN) {
+            return Material.LIME_STAINED_GLASS_PANE;
+        }
+        if (color == NamedTextColor.AQUA) {
+            return Material.LIGHT_BLUE_STAINED_GLASS_PANE;
+        }
+        if (color == NamedTextColor.YELLOW) {
+            return Material.YELLOW_STAINED_GLASS_PANE;
+        }
+        return Material.WHITE_STAINED_GLASS_PANE;
     }
 
     private ItemStack infoItem(Fish fish) {
@@ -130,16 +233,6 @@ public final class PetMenu {
         return item;
     }
 
-    private ItemStack statItem(Material material, String name, int value, NamedTextColor color, String hint) {
-        ItemStack item = new ItemStack(material);
-        item.editMeta(meta -> {
-            meta.customName(Component.text(name + ": " + value, color)
-                    .decoration(TextDecoration.ITALIC, false));
-            meta.lore(List.of(line(hint, NamedTextColor.GRAY)));
-        });
-        return item;
-    }
-
     private ItemStack typeItem(Fish fish) {
         ItemStack item = new ItemStack(Material.PRISMARINE_SHARD);
         item.editMeta(meta -> {
@@ -150,12 +243,12 @@ public final class PetMenu {
         return item;
     }
 
-    private ItemStack techniqueItem(Technique technique, int index) {
+    private ItemStack techniqueItem(Technique technique, Rps hand) {
         ItemStack item = new ItemStack(Material.PAPER);
         item.editMeta(meta -> {
             String name = technique != null ? technique.name() : "不明な技";
             NamedTextColor color = technique != null ? technique.color() : NamedTextColor.GRAY;
-            meta.customName(Component.text((index + 1) + ". " + name, color)
+            meta.customName(Component.text(hand.emoji() + " " + name, color)
                     .decoration(TextDecoration.ITALIC, false));
             List<Component> lore = new ArrayList<>();
             if (technique != null) {
@@ -168,11 +261,11 @@ public final class PetMenu {
         return item;
     }
 
-    private ItemStack emptyTechniqueItem(int index) {
+    private ItemStack emptyTechniqueItem(Rps hand) {
         ItemStack item = new ItemStack(Material.LIGHT_GRAY_STAINED_GLASS_PANE);
         item.editMeta(meta -> {
-            meta.customName(Component.text("技スロット " + (index + 1) + "（空き）", NamedTextColor.DARK_GRAY)
-                    .decoration(TextDecoration.ITALIC, false));
+            meta.customName(Component.text(hand.emoji() + " " + hand.label() + "（技なし）",
+                    NamedTextColor.DARK_GRAY).decoration(TextDecoration.ITALIC, false));
             meta.lore(List.of(line("技カードを持って魚を右クリックで装備", NamedTextColor.GRAY)));
         });
         return item;
@@ -223,14 +316,23 @@ public final class PetMenu {
                 close(player);
                 player.closeInventory();
             }
-            case SLOT_TECH1, SLOT_TECH2, SLOT_TECH3 -> {
-                int index = slot - SLOT_TECH1 + 1;
-                untrain(player, entity, index);
-                refreshIfOpen(player);
-            }
             default -> {
+                Rps hand = handAtSlot(slot);
+                if (hand != null) {
+                    untrain(player, entity, hand);
+                    refreshIfOpen(player);
+                }
             }
         }
+    }
+
+    private static Rps handAtSlot(int slot) {
+        for (int i = 0; i < SLOT_TECH.length; i++) {
+            if (SLOT_TECH[i] == slot) {
+                return List.of(Rps.GU, Rps.CHOKI, Rps.PA).get(i);
+            }
+        }
+        return null;
     }
 
     public void rename(Player player, String name) {
@@ -254,21 +356,18 @@ public final class PetMenu {
         return inventory.getHolder() instanceof Holder;
     }
 
-    private void untrain(Player player, Entity entity, int slot) {
+    private void untrain(Player player, Entity entity, Rps hand) {
         Fish fish = FishData.read(entity);
         if (fish == null) {
             return;
         }
-        List<String> ids = new ArrayList<>(fish.techniques());
-        if (slot < 1 || slot > ids.size()) {
+        Technique technique = fish.techniqueFor(hand);
+        if (technique == null) {
             return;
         }
-        String removed = ids.remove(slot - 1);
-        entity.getPersistentDataContainer().set(FishKeys.TECHNIQUES, PersistentDataType.STRING,
-                String.join(",", ids));
-        entity.customName(FishItems.name(fish.withTechniques(ids)));
-        Technique technique = Technique.byId(removed);
-        player.sendMessage(Component.text((technique != null ? technique.name() : removed) + " を外しました。",
+        Fish updated = fish.withoutTechnique(hand);
+        FishData.write(entity, updated);
+        player.sendMessage(Component.text(hand.emoji() + technique.name() + " を外しました。",
                 NamedTextColor.GRAY));
     }
 
@@ -282,19 +381,15 @@ public final class PetMenu {
         if (fish == null) {
             return;
         }
-        player.sendMessage(Component.text("── 装備中の技 (" + fish.techniques().size() + "/3) ──",
-                NamedTextColor.AQUA));
+        player.sendMessage(Component.text("── 装備中の技 ──", NamedTextColor.AQUA));
         if (fish.techniques().isEmpty()) {
             player.sendMessage(Component.text("なし（技カードを持って魚を右クリックで装備）", NamedTextColor.GRAY));
             return;
         }
-        for (String id : fish.techniques()) {
-            Technique technique = Technique.byId(id);
-            if (technique == null) {
-                continue;
-            }
+        for (var entry : fish.moves().entrySet()) {
+            Technique technique = entry.getValue();
             player.sendMessage(Component.text()
-                    .append(Component.text("・", NamedTextColor.GRAY))
+                    .append(Component.text(entry.getKey().emoji() + " ", NamedTextColor.WHITE))
                     .append(Component.text(technique.name(), technique.color()))
                     .append(Component.text(" x" + String.format("%.2f", technique.bonus()),
                             NamedTextColor.DARK_GRAY))
@@ -307,32 +402,44 @@ public final class PetMenu {
         if (fish == null) {
             return false;
         }
-        List<String> ids = new ArrayList<>(fish.techniques());
-        if (ids.contains(technique.id())) {
+        if (fish.hasTechnique(technique.id())) {
             player.sendMessage(Component.text("その技はすでに装備しています。", NamedTextColor.YELLOW));
             return false;
         }
-        if (ids.size() >= 3) {
-            player.sendMessage(Component.text("技は3つまでです。付け替えるなら先に外してください。", NamedTextColor.RED));
+        Rps hand = technique.hand();
+        Technique equipped = fish.techniqueFor(hand);
+        if (equipped != null) {
+            player.sendMessage(Component.text(hand.emoji() + " にはすでに「" + equipped.name()
+                    + "」があります。先に外してください。", NamedTextColor.RED));
             return false;
         }
-        ids.add(technique.id());
         entity.getPersistentDataContainer().set(FishKeys.TECHNIQUES, PersistentDataType.STRING,
-                String.join(",", ids));
-        entity.customName(FishItems.name(fish.withTechniques(ids)));
+                FishItems.serializeTechniques(fish.withTechnique(hand, technique.id())));
+        entity.customName(FishItems.name(fish.withTechnique(hand, technique.id())));
         entity.setCustomNameVisible(true);
-        player.sendMessage(Component.text("「" + technique.name() + "」を覚えさせました（"
-                + ids.size() + "/3）。", technique.color()));
+        player.sendMessage(Component.text("「" + technique.name() + "」を " + hand.emoji() + " に覚えさせました。",
+                technique.color()));
         refreshIfOpen(player);
         return true;
     }
 
-    public void untrain(Player player, int slot) {
+    public void untrain(Player player, Rps hand) {
         Entity entity = petOf(player);
         if (entity == null) {
             return;
         }
-        untrain(player, entity, slot);
+        untrain(player, entity, hand);
+    }
+
+    public void untrain(Player player, String handName, Runnable onFound) {
+        Rps hand = Rps.parse(handName);
+        if (hand == null) {
+            return;
+        }
+        untrain(player, hand);
+        if (onFound != null) {
+            onFound.run();
+        }
     }
 
     public void toggleFollow(Player player) {

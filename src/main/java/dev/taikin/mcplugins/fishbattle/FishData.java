@@ -53,7 +53,7 @@ public final class FishData {
         if (fish.techniques().isEmpty()) {
             pdc.remove(FishKeys.TECHNIQUES);
         } else {
-            pdc.set(FishKeys.TECHNIQUES, PersistentDataType.STRING, String.join(",", fish.techniques()));
+            pdc.set(FishKeys.TECHNIQUES, PersistentDataType.STRING, FishItems.serializeTechniques(fish));
         }
         entity.customName(FishItems.name(fish));
         entity.setCustomNameVisible(true);

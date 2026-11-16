@@ -4,35 +4,45 @@ import java.util.ArrayList;
 import java.util.List;
 import net.kyori.adventure.text.format.NamedTextColor;
 
-public record Technique(String id, String name, double bonus, String description) {
+public record Technique(String id, String name, double bonus, Rps hand, String description) {
 
     private static final List<Technique> REGISTRY = new ArrayList<>();
 
     static {
-        add("tackle", "たいあたり", 1.10, "基本の体当たり");
-        add("bite", "かみつき", 1.25, "鋭い牙で噛みつく");
-        add("tail", "しっぽビンタ", 1.20, "しっぽで張り倒す");
-        add("splash", "はねあげ", 1.15, "水しぶきを上げる");
-        add("dash", "とっしん", 1.35, "勢いよく突進する");
-        add("spin", "スピンアタック", 1.30, "回転しながら体当たり");
-        add("bubble", "バブルビーム", 1.45, "泡を撃ち出す");
-        add("wave", "ビッグウェーブ", 1.60, "大波で押し流す");
-        add("thunder", "かみなり", 1.70, "雷を落とす");
-        add("blaze", "ごうかブレイズ", 1.85, "炎をまとって突撃");
-        add("frost", "こおりづめ", 1.55, "冷気で凍らせる");
-        add("poison", "もうどくばり", 1.50, "毒針を突き刺す");
-        add("guard", "てっぺき", 1.00, "防御を固める");
-        add("heal", "いやしのしずく", 1.05, "体力を少し回復する");
-        add("lucky", "ラッキーヒット", 1.40, "運任せの一撃");
-        add("finish", "とどめの一撃", 2.00, "勝負を決める大技");
+        add("tackle", "たいあたり", 1.10, Rps.GU, "基本の体当たり");
+        add("bite", "かみつき", 1.25, Rps.CHOKI, "鋭い牙で噛みつく");
+        add("tail", "しっぽビンタ", 1.20, Rps.CHOKI, "しっぽで張り倒す");
+        add("splash", "はねあげ", 1.15, Rps.CHOKI, "水しぶきを上げる");
+        add("dash", "とっしん", 1.35, Rps.GU, "勢いよく突進する");
+        add("spin", "スピンアタック", 1.30, Rps.GU, "回転しながら体当たり");
+        add("bubble", "バブルビーム", 1.45, Rps.PA, "泡を撃ち出す");
+        add("wave", "ビッグウェーブ", 1.60, Rps.PA, "大波で押し流す");
+        add("thunder", "かみなり", 1.70, Rps.GU, "雷を落とす");
+        add("blaze", "ごうかブレイズ", 1.85, Rps.GU, "炎をまとって突撃");
+        add("frost", "こおりづめ", 1.55, Rps.CHOKI, "冷気で凍らせる");
+        add("poison", "もうどくばり", 1.50, Rps.CHOKI, "毒針を突き刺す");
+        add("guard", "てっぺき", 1.00, Rps.PA, "防御を固める");
+        add("heal", "いやしのしずく", 1.05, Rps.PA, "体力を少し回復する");
+        add("lucky", "ラッキーヒット", 1.40, Rps.PA, "運任せの一撃");
+        add("finish", "とどめの一撃", 2.00, Rps.GU, "勝負を決める大技");
     }
 
-    private static void add(String id, String name, double bonus, String description) {
-        REGISTRY.add(new Technique(id, name, bonus, description));
+    private static void add(String id, String name, double bonus, Rps hand, String description) {
+        REGISTRY.add(new Technique(id, name, bonus, hand, description));
     }
 
     public static List<Technique> all() {
         return REGISTRY;
+    }
+
+    public static List<Technique> forHand(Rps hand) {
+        List<Technique> result = new ArrayList<>();
+        for (Technique technique : REGISTRY) {
+            if (technique.hand == hand) {
+                result.add(technique);
+            }
+        }
+        return result;
     }
 
     public static Technique byId(String id) {

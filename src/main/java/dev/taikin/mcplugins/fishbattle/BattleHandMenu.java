@@ -2,6 +2,7 @@ package dev.taikin.mcplugins.fishbattle;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -25,13 +26,19 @@ public final class BattleHandMenu implements Listener {
 
     private final Set<UUID> open = new HashSet<>();
 
-    public void open(Player player, List<Rps> hands, Consumer<Rps> onPick, Runnable onCancel) {
+    public void open(Player player, List<Rps> hands, Map<Rps, Technique> techniques,
+            Consumer<Rps> onPick, Runnable onCancel) {
+        open(player, "手を選べ（クリックで決定）", hands, techniques, onPick, onCancel);
+    }
+
+    public void open(Player player, String title, List<Rps> hands, Map<Rps, Technique> techniques,
+            Consumer<Rps> onPick, Runnable onCancel) {
         Holder holder = new Holder(hands, onPick, onCancel);
         Inventory inventory = Bukkit.createInventory(holder, 9,
-                Component.text("手を選べ（クリックで決定）", NamedTextColor.DARK_AQUA));
+                Component.text(title, NamedTextColor.DARK_AQUA));
         holder.inventory = inventory;
         for (int i = 0; i < hands.size() && i < SLOTS.length; i++) {
-            inventory.setItem(SLOTS[i], item(hands.get(i)));
+            inventory.setItem(SLOTS[i], item(hands.get(i), techniques.get(hands.get(i))));
         }
         open.add(player.getUniqueId());
         player.openInventory(inventory);
@@ -95,7 +102,7 @@ public final class BattleHandMenu implements Listener {
         }
     }
 
-    private static ItemStack item(Rps hand) {
+    private static ItemStack item(Rps hand, Technique technique) {
         Material material = switch (hand) {
             case GU -> Material.BLUE_DYE;
             case CHOKI -> Material.RED_DYE;
@@ -105,12 +112,21 @@ public final class BattleHandMenu implements Listener {
         item.editMeta(meta -> {
             meta.customName(Component.text(hand.emoji() + " " + hand.label(), hand.color())
                     .decoration(TextDecoration.ITALIC, false));
-            meta.lore(List.of(Component.text("クリックでこの手に決定", NamedTextColor.GRAY)
-                    .decoration(TextDecoration.ITALIC, false)));
+            java.util.List<Component> lore = new java.util.ArrayList<>();
+            lore.add(line("クリックでこの手に決定", NamedTextColor.GRAY));
+            lore.add(technique != null
+                    ? line("技: " + technique.name() + " x" + String.format("%.2f", technique.bonus()),
+                            technique.color())
+                    : line("技: なし", NamedTextColor.DARK_GRAY));
+            meta.lore(lore);
             meta.setEnchantmentGlintOverride(true);
             meta.addItemFlags(org.bukkit.inventory.ItemFlag.HIDE_ENCHANTS);
         });
         return item;
+    }
+
+    private static Component line(String text, NamedTextColor color) {
+        return Component.text(text, color).decoration(TextDecoration.ITALIC, false);
     }
 
     private static final class Holder implements org.bukkit.inventory.InventoryHolder {

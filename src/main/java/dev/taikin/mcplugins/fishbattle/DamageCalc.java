@@ -17,13 +17,7 @@ final class DamageCalc {
                 (int) Math.round(base * attackFactor * defenseFactor * typeMultiplier * variance));
     }
 
-    static Technique bestTechnique(Fish fish) {
-        Technique best = null;
-        for (Technique technique : fish.moves()) {
-            if (best == null || technique.bonus() > best.bonus()) {
-                best = technique;
-            }
-        }
-        return best;
+    static Technique bestTechnique(Fish fish, Rps hand) {
+        return fish.techniqueFor(hand);
     }
 }

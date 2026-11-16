@@ -107,8 +107,7 @@ public final class FishItems {
             if (fish.techniques().isEmpty()) {
                 pdc.remove(FishKeys.TECHNIQUES);
             } else {
-                pdc.set(FishKeys.TECHNIQUES, PersistentDataType.STRING,
-                        String.join(",", fish.techniques()));
+                pdc.set(FishKeys.TECHNIQUES, PersistentDataType.STRING, serializeTechniques(fish));
             }
             meta.customName(name(fish));
             meta.lore(lore(fish));
@@ -127,14 +126,14 @@ public final class FishItems {
         String key = keys.get(ThreadLocalRandom.current().nextInt(keys.size()));
         FishSpecies species = FishSpecies.byKey(key);
         Fish fish = new Fish(java.util.UUID.randomUUID().toString(), type, key, level, 0,
-                Fish.maxHp(species, level), "", java.util.List.of());
+                Fish.maxHp(species, level), "", java.util.Map.of());
         return bucketFor(fish);
     }
 
     public static ItemStack speciesBucket(String speciesKey, int level) {
         FishSpecies species = FishSpecies.byKey(speciesKey);
         Fish fish = new Fish(java.util.UUID.randomUUID().toString(), FishType.random(), speciesKey, level, 0,
-                Fish.maxHp(species, level), "", java.util.List.of());
+                Fish.maxHp(species, level), "", java.util.Map.of());
         return bucketFor(fish);
     }
 
@@ -191,34 +190,75 @@ public final class FishItems {
         return item;
     }
 
-    public static java.util.List<String> parseTechniques(String raw) {
+    public static java.util.Map<Rps, String> parseTechniques(String raw) {
+        java.util.Map<Rps, String> ids = new java.util.LinkedHashMap<>();
         if (raw == null || raw.isBlank()) {
-            return java.util.List.of();
+            return ids;
         }
-        java.util.List<String> ids = new java.util.ArrayList<>();
         for (String part : raw.split(",")) {
-            String id = part.trim();
-            if (!id.isEmpty() && Technique.byId(id) != null) {
-                ids.add(id);
-                if (ids.size() >= 3) {
-                    break;
+            String entry = part.trim();
+            if (entry.isEmpty()) {
+                continue;
+            }
+            int colon = entry.indexOf(':');
+            Rps hand;
+            String id;
+            if (colon >= 0) {
+                hand = parseHand(entry.substring(0, colon));
+                id = entry.substring(colon + 1).trim();
+            } else {
+                hand = null;
+                id = entry;
+            }
+            if (id.isEmpty() || Technique.byId(id) == null) {
+                continue;
+            }
+            if (hand == null) {
+                for (Rps candidate : Rps.values()) {
+                    if (!ids.containsKey(candidate)) {
+                        hand = candidate;
+                        break;
+                    }
                 }
+            }
+            if (hand != null && !ids.containsKey(hand)) {
+                ids.put(hand, id);
             }
         }
         return ids;
     }
 
+    public static String serializeTechniques(Fish fish) {
+        StringBuilder builder = new StringBuilder();
+        for (var entry : fish.techniques().entrySet()) {
+            if (builder.length() > 0) {
+                builder.append(',');
+            }
+            builder.append(entry.getKey().name()).append(':').append(entry.getValue());
+        }
+        return builder.toString();
+    }
+
+    private static Rps parseHand(String raw) {
+        try {
+            return Rps.valueOf(raw.trim().toUpperCase(java.util.Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
     public static String techniqueSummary(Fish fish) {
-        java.util.List<Technique> moves = fish.moves();
+        java.util.Map<Rps, Technique> moves = fish.moves();
         if (moves.isEmpty()) {
             return "なし";
         }
         StringBuilder builder = new StringBuilder();
-        for (Technique move : moves) {
+        for (var entry : moves.entrySet()) {
             if (builder.length() > 0) {
-                builder.append(" / ");
+                builder.append(' ');
             }
-            builder.append(move.name()).append("(").append(String.format("%.2f", move.bonus())).append("x)");
+            builder.append(entry.getKey().emoji()).append(entry.getValue().name())
+                    .append('(').append(String.format("%.2f", entry.getValue().bonus())).append("x)");
         }
         return builder.toString();
     }

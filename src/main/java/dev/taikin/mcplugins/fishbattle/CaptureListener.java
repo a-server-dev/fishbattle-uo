@@ -370,7 +370,7 @@ public final class CaptureListener implements Listener {
         }
         pdc.set(FishKeys.FOLLOW, PersistentDataType.BYTE, (byte) 1);
         if (!fish.techniques().isEmpty()) {
-            pdc.set(FishKeys.TECHNIQUES, PersistentDataType.STRING, String.join(",", fish.techniques()));
+            pdc.set(FishKeys.TECHNIQUES, PersistentDataType.STRING, FishItems.serializeTechniques(fish));
         }
         entity.customName(FishItems.name(fish));
         entity.setCustomNameVisible(true);
@@ -411,6 +411,6 @@ public final class CaptureListener implements Listener {
         FishType type = FishType.random();
         int level = ThreadLocalRandom.current().nextInt(2, 6);
         return new Fish(UUID.randomUUID().toString(), type, speciesKey, level, 0,
-                Fish.maxHp(FishSpecies.byKey(speciesKey), level), "", List.of());
+                Fish.maxHp(FishSpecies.byKey(speciesKey), level), "", java.util.Map.of());
     }
 }
