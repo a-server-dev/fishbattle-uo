@@ -56,14 +56,21 @@ public final class PetMenu {
 
     private static final int SLOTS = 27;
     private static final int STATS_SLOTS = 45;
+    private final org.bukkit.plugin.Plugin plugin;
     private final FishMotion motion;
+    private BattleManager battles;
     private final RenameDialog renameDialog;
     private final Map<UUID, UUID> lastPet = new HashMap<>();
     private final Map<UUID, UUID> openMenus = new HashMap<>();
     private final Map<UUID, Long> releaseConfirm = new HashMap<>();
     private static final long RELEASE_CONFIRM_MILLIS = 5000L;
 
-    public PetMenu(FishMotion motion) {
+    public void setBattles(BattleManager battles) {
+        this.battles = battles;
+    }
+
+    public PetMenu(org.bukkit.plugin.Plugin plugin, FishMotion motion) {
+        this.plugin = plugin;
         this.motion = motion;
         this.renameDialog = new RenameDialog(motion);
     }
@@ -165,6 +172,54 @@ public final class PetMenu {
                 inventory.setItem(SLOT_TECH[i], emptyTechniqueItem(hand));
             }
         }
+    }
+
+    static void applyPuff(PufferFish puffer, int state) {
+        puffer.setPuffState(state == 0 ? 1 : 0);
+        puffer.setPuffState(state);
+    }
+
+    private Entity respawnPuffer(Entity old, int puff) {
+        Fish fish = FishData.read(old);
+        if (fish == null) {
+            return null;
+        }
+        var oldData = old.getPersistentDataContainer();
+        String owner = oldData.get(FishKeys.OWNER, PersistentDataType.STRING);
+        Double ax = oldData.get(FishKeys.ANCHOR_X, PersistentDataType.DOUBLE);
+        Double ay = oldData.get(FishKeys.ANCHOR_Y, PersistentDataType.DOUBLE);
+        Double az = oldData.get(FishKeys.ANCHOR_Z, PersistentDataType.DOUBLE);
+        Byte follow = oldData.get(FishKeys.FOLLOW, PersistentDataType.BYTE);
+        var location = old.getLocation();
+
+        Entity fresh = CaptureListener.spawnFor(fish, location);
+        if (!(fresh instanceof PufferFish puffer)) {
+            if (fresh != null) {
+                fresh.remove();
+            }
+            return null;
+        }
+        CaptureListener.applyData(fresh, fish);
+        var data = fresh.getPersistentDataContainer();
+        if (owner != null) {
+            data.set(FishKeys.OWNER, PersistentDataType.STRING, owner);
+        }
+        data.set(FishKeys.PUFF, PersistentDataType.INTEGER, puff);
+        if (follow != null) {
+            data.set(FishKeys.FOLLOW, PersistentDataType.BYTE, follow);
+        }
+        if (ax != null && ay != null && az != null) {
+            data.set(FishKeys.ANCHOR_X, PersistentDataType.DOUBLE, ax);
+            data.set(FishKeys.ANCHOR_Y, PersistentDataType.DOUBLE, ay);
+            data.set(FishKeys.ANCHOR_Z, PersistentDataType.DOUBLE, az);
+        }
+        fresh.setPersistent(true);
+        puffer.setPuffState(puff);
+
+        motion.untrack(old);
+        old.remove();
+        motion.track(fresh);
+        return fresh;
     }
 
     private ItemStack puffItem(int state) {
@@ -367,11 +422,19 @@ public final class PetMenu {
             case SLOT_PUFF -> {
                 if (entity instanceof PufferFish puffer) {
                     int next = (puffer.getPuffState() + 1) % 3;
-                    puffer.setPuffState(next);
-                    entity.getPersistentDataContainer().set(FishKeys.PUFF, PersistentDataType.INTEGER, next);
                     player.playSound(player.getLocation(), Sound.ENTITY_PUFFER_FISH_BLOW_UP, 0.7f,
                             next == 0 ? 0.8f : 1.0f + next * 0.2f);
-                    refreshIfOpen(player);
+                    if (battles != null && battles.inBattle(player.getUniqueId())) {
+                        entity.getPersistentDataContainer().set(FishKeys.PUFF,
+                                PersistentDataType.INTEGER, next);
+                        applyPuff(puffer, next);
+                        refreshIfOpen(player);
+                        return;
+                    }
+                    Entity replacement = respawnPuffer(entity, next);
+                    if (replacement != null) {
+                        open(player, replacement);
+                    }
                 }
                 return;
             }

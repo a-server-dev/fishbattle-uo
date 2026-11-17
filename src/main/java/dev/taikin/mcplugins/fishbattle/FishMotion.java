@@ -259,7 +259,7 @@ public final class FishMotion {
         if (entity instanceof PufferFish puffer) {
             Integer puff = pdc(entity).get(FishKeys.PUFF, PersistentDataType.INTEGER);
             if (puff != null && puffer.getPuffState() != puff) {
-                puffer.setPuffState(puff);
+                PetMenu.applyPuff(puffer, puff);
             }
         }
     }
