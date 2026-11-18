@@ -139,6 +139,25 @@ species:
 - 変更後は `/uo reload`（管理者）またはサーバー再起動で反映
 - 記載のない種族は同梱の初期値が使われます
 
+## 技カード（techniques.yml）
+
+`plugins/uo/techniques.yml` で技カードを定義できます（初回起動時に自動生成）。
+
+```yaml
+techniques:
+  wave:
+    name: "ビッグウェーブ"
+    hand: PA            # GU / CHOKI / PA
+    power: 1.60         # 威力倍率
+    mash-seconds: 0.0   # 連打時間の延長（秒）
+    rarity: RARE        # COMMON / UNCOMMON / RARE / EPIC / LEGENDARY
+    description: "大波で押し流す"
+```
+
+- 未記載の技IDは組み込みの初期値が使われます
+- `/uo reload` で再読み込み
+- 技IDを変更すると既存の魚からは外れます
+
 ## データ
 
 個体データはアイテムの PersistentDataContainer に保存されるため、追加のデータファイルはありません。

@@ -24,6 +24,7 @@ public final class TechniqueItem {
             java.util.List<Component> lore = new java.util.ArrayList<>();
             lore.add(line(technique.hand().emoji() + " " + technique.hand().label() + " 用",
                     technique.hand().color()));
+            lore.add(line("レアリティ: " + technique.rarity().label(), technique.rarity().color()));
             lore.add(line("威力 x" + String.format("%.2f", technique.bonus()), technique.color()));
             if (technique.mashSeconds() > 0) {
                 lore.add(line("連打時間 +" + String.format("%.1f", technique.mashSeconds()) + "秒",

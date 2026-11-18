@@ -19,6 +19,7 @@ public final class FishBattlePlugin extends JavaPlugin {
     public void onEnable() {
         FishKeys.init(this);
         loadSpeciesConfig();
+        loadTechniqueConfig();
         this.motion = new FishMotion(this);
         this.battles = new BattleManager(this, motion);
         motion.start();
@@ -63,6 +64,7 @@ public final class FishBattlePlugin extends JavaPlugin {
     public void reloadSpeciesConfig() {
         reloadConfig();
         loadSpeciesConfig();
+        loadTechniqueConfig();
     }
 
     private void loadSpeciesConfig() {
@@ -74,6 +76,23 @@ public final class FishBattlePlugin extends JavaPlugin {
                 getConfig().getDouble("exp.min-multiplier", 0.45));
         FishSpecies.loadConfig(getConfig().getConfigurationSection("species"));
         getLogger().info("Loaded species stats from config.yml.");
+    }
+
+    private void loadTechniqueConfig() {
+        var file = new java.io.File(getDataFolder(), "techniques.yml");
+        if (!file.exists()) {
+            saveResource("techniques.yml", false);
+        }
+        var yaml = new org.bukkit.configuration.file.YamlConfiguration();
+        try {
+            yaml.load(file);
+        } catch (java.io.IOException | org.bukkit.configuration.InvalidConfigurationException e) {
+            getLogger().warning("techniques.yml を読み込めませんでした: " + e.getMessage());
+            Technique.loadConfig(null);
+            return;
+        }
+        Technique.loadConfig(yaml.getConfigurationSection("techniques"));
+        getLogger().info("Loaded " + Technique.all().size() + " techniques from techniques.yml.");
     }
 
     private void registerCaptureRecipe() {
