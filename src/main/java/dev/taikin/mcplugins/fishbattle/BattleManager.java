@@ -241,6 +241,11 @@ public final class BattleManager {
     }
 
     public void startDemo(Player player, DemoVillager.Settings settings, Location anchor) {
+        startDemo(player, settings, anchor, null);
+    }
+
+    public void startDemo(Player player, DemoVillager.Settings settings, Location anchor,
+            Entity anchorVillager) {
         if (inBattle(player.getUniqueId())) {
             player.sendMessage(Component.text("すでにバトル中です。", NamedTextColor.RED));
             return;
@@ -301,20 +306,35 @@ public final class BattleManager {
 
         pets.freeze(session, player.getUniqueId(), pet);
         pets.place(pet, base.clone().add(direction.clone().multiply(1.2)), direction);
-        var npcFishEntity = CaptureListener.spawnFor(npcFish, base.clone()
-                .add(direction.clone().multiply(-1.2)));
-        if (npcFishEntity != null) {
-            npcFishEntity.setRotation(center.getYaw() + 180f, 0f);
+
+        Entity npcFishEntity = null;
+        Entity preview = null;
+        if (anchor != null && anchorVillager != null) {
+            preview = DemoVillager.fishEntity(anchorVillager);
         }
-        var spawnAt = base.clone().add(direction.clone().multiply(-2.0)).add(0, -1.0, 0);
-        if (npcFishEntity != null) {
+        if (preview != null) {
+            npcFishEntity = preview;
             CaptureListener.applyData(npcFishEntity, npcFish);
             npcFishEntity.getPersistentDataContainer().set(FishKeys.OWNER,
                     PersistentDataType.STRING, npcId.toString());
-            npcFishEntity.setPersistent(true);
-            motion.track(npcFishEntity);
             motion.setFollow(npcFishEntity, false);
-            motion.place(npcFishEntity, npcFishEntity.getLocation());
+            motion.place(npcFishEntity, base.clone().add(direction.clone().multiply(-1.2)));
+        } else {
+            npcFishEntity = CaptureListener.spawnFor(npcFish, base.clone()
+                    .add(direction.clone().multiply(-1.2)));
+            if (npcFishEntity != null) {
+                CaptureListener.applyData(npcFishEntity, npcFish);
+                npcFishEntity.getPersistentDataContainer().set(FishKeys.OWNER,
+                        PersistentDataType.STRING, npcId.toString());
+                npcFishEntity.setPersistent(true);
+                motion.track(npcFishEntity);
+                motion.setFollow(npcFishEntity, false);
+                motion.place(npcFishEntity, npcFishEntity.getLocation());
+                session.setNpcPetId(npcFishEntity.getUniqueId());
+            }
+        }
+        if (npcFishEntity != null) {
+            npcFishEntity.setRotation(center.getYaw() + 180f, 0f);
             session.setNpcPetId(npcFishEntity.getUniqueId());
         }
         pets.showBattleNames(session);
@@ -1114,12 +1134,35 @@ public final class BattleManager {
         if (session.npcPetId() != null) {
             Entity npcPet = Bukkit.getEntity(session.npcPetId());
             if (npcPet != null) {
-                npcPet.remove();
+                String demoOwner = npcPet.getPersistentDataContainer()
+                        .get(FishKeys.DEMO_FISH, PersistentDataType.STRING);
+                if (demoOwner != null) {
+                    restorePreviewFish(npcPet, demoOwner);
+                } else {
+                    npcPet.remove();
+                }
             }
         }
         pets.hideBattleNames(session);
         pets.restore(session, session.playerA());
         pets.restore(session, session.playerB());
+    }
+
+    private void restorePreviewFish(Entity fish, String villagerId) {
+        Entity villager = null;
+        try {
+            villager = Bukkit.getEntity(UUID.fromString(villagerId));
+        } catch (IllegalArgumentException ignored) {
+        }
+        if (!(villager instanceof org.bukkit.entity.Villager living)) {
+            fish.remove();
+            return;
+        }
+        fish.getPersistentDataContainer().set(FishKeys.OWNER, PersistentDataType.STRING, villagerId);
+        motion.setFollow(fish, false);
+        DemoVillager.attachFish(living, DemoVillager.read(living), motion);
+        motion.untrack(fish);
+        fish.remove();
     }
 
     private void status(Player player, BattleSession session) {
