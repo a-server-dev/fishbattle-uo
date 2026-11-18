@@ -41,8 +41,8 @@ species:
     technique: 55
   snooper:
     name: "ハナビレ"
-    hp: 50
-    power: 50
+    hp: 55
+    power: 45
     technique: 60
   dasher:
     name: "セイブン"
