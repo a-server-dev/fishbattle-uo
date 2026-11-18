@@ -215,15 +215,11 @@ public final class FishCommand {
             sender.sendMessage(Component.text("プレイヤーのみ使用できます。", NamedTextColor.RED));
             return 0;
         }
-        var location = player.getLocation();
-        var direction = location.getDirection().setY(0);
-        if (direction.lengthSquared() < 0.001) {
-            direction = new org.bukkit.util.Vector(0, 0, 1);
-        }
-        direction.normalize();
-        var spawnAt = location.clone().add(direction.multiply(2.5));
+        var spawnAt = player.getLocation().clone();
+        spawnAt.setPitch(0f);
         var villager = player.getWorld().spawn(spawnAt, org.bukkit.entity.Villager.class,
                 org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.CUSTOM);
+        villager.setRotation(spawnAt.getYaw(), 0f);
         DemoVillager.mark(villager, new DemoVillager.Settings("cod", 5, FishType.BLUE,
                         Rank.COPPER, Rank.COPPER, Rank.COPPER));
         villager.setPersistent(true);
