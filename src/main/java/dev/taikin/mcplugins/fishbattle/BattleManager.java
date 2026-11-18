@@ -236,10 +236,6 @@ public final class BattleManager {
         beginRound(session, 1);
     }
 
-    public void startDemo(Player player) {
-        startDemo(player, null, null);
-    }
-
     public void startDemo(Player player, DemoVillager.Settings settings) {
         startDemo(player, settings, null);
     }

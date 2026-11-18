@@ -49,8 +49,6 @@ public final class FishCommand {
                                                 context, "stake"))))
                         .then(Commands.literal("stop")
                                 .executes(context -> stop(context.getSource().getSender())))
-                        .then(Commands.literal("demo")
-                                .executes(context -> demo(context.getSource().getSender())))
                         .then(Commands.argument("target", StringArgumentType.word())
                                 .suggests(this::suggestPlayers)
                                 .executes(context -> battle(context.getSource().getSender(),
@@ -61,13 +59,11 @@ public final class FishCommand {
                                                 com.mojang.brigadier.arguments.DoubleArgumentType.getDouble(
                                                         context, "stake"))))))
                 .then(Commands.literal("demo")
-                        .executes(context -> demo(context.getSource().getSender()))
-                        .then(Commands.literal("npc")
-                                .requires(source -> source.getSender().hasPermission("uobattle.admin"))
-                                .executes(context -> demoVillager(context.getSource().getSender()))
-                                .then(Commands.literal("remove")
-                                        .executes(context -> removeDemoVillagers(
-                                                context.getSource().getSender())))))
+                        .requires(source -> source.getSender().hasPermission("uobattle.admin"))
+                        .executes(context -> demoVillager(context.getSource().getSender()))
+                        .then(Commands.literal("remove")
+                                .executes(context -> removeDemoVillagers(
+                                        context.getSource().getSender()))))
                 .then(Commands.literal("accept")
                         .executes(context -> accept(context.getSource().getSender())))
                 .then(Commands.literal("deny")
@@ -243,15 +239,6 @@ public final class FishCommand {
         return 1;
     }
 
-    private int demo(org.bukkit.command.CommandSender sender) {
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage(Component.text("プレイヤーのみ使用できます。", NamedTextColor.RED));
-            return 0;
-        }
-        battles.startDemo(player);
-        return 1;
-    }
-
     private int accept(org.bukkit.command.CommandSender sender) {
         if (!(sender instanceof Player player)) {
             return 0;
@@ -274,10 +261,8 @@ public final class FishCommand {
                 NamedTextColor.GRAY));
         sender.sendMessage(Component.text("/uo battle <player> [賭け金]  相手を指定して申し込む",
                 NamedTextColor.GRAY));
-        sender.sendMessage(Component.text("/uo demo             NPCとデモバトル", NamedTextColor.GRAY));
-        sender.sendMessage(Component.text("/uo demo npc         設定できるデモ村人を置く（管理者）", NamedTextColor.GRAY));
-        sender.sendMessage(Component.text("/uo demo npc remove  近くのデモ村人を消す（管理者）", NamedTextColor.GRAY));
-        sender.sendMessage(Component.text("/uo battle demo      NPCとデモバトル", NamedTextColor.GRAY));
+        sender.sendMessage(Component.text("/uo demo             デモ村人を置く（管理者）", NamedTextColor.GRAY));
+        sender.sendMessage(Component.text("/uo demo remove      削除モードの切替（管理者）", NamedTextColor.GRAY));
         sender.sendMessage(Component.text("/uo battle stop      バトルを降参して終了", NamedTextColor.GRAY));
         sender.sendMessage(Component.text("/uo accept | deny    申し込みを受ける / 断る", NamedTextColor.GRAY));
         sender.sendMessage(Component.text("/uo gu | choki | pa  じゃんけんの手を選ぶ（GUIでも可）", NamedTextColor.GRAY));
