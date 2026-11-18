@@ -161,10 +161,8 @@ public final class FishItems {
         return List.of(
                 line("属性: " + fish.type().label(), fish.type().color()),
                 line("HP: " + fish.hp() + " / " + fish.maxHp(), NamedTextColor.RED),
-                line("強さ " + fish.power() + " " + fish.powerRank().display()
-                        + "  体力 " + fish.maxHp() + " " + fish.hpRank().display()
-                        + "  テクニック " + fish.technique() + " " + fish.techRank().display(),
-                        NamedTextColor.GRAY),
+                line("強さ " + fish.power() + "  体力 " + fish.maxHp()
+                        + "  テクニック " + fish.technique(), NamedTextColor.GRAY),
                 line("技: " + techniqueSummary(fish), NamedTextColor.AQUA),
                 line("Lv" + fish.level() + " / つぎまで "
                         + Math.max(0, fish.nextExp() - fish.exp()) + " EXP", NamedTextColor.AQUA));
