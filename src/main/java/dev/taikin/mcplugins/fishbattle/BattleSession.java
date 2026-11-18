@@ -293,13 +293,18 @@ public final class BattleSession {
         if (isA) {
             lastMashAtA = now;
             clicksA++;
-            chargeA = gain(chargeA);
+            chargeA = gain(chargeA, techniqueOf(player));
         } else {
             lastMashAtB = now;
             clicksB++;
-            chargeB = gain(chargeB);
+            chargeB = gain(chargeB, techniqueOf(player));
         }
         return true;
+    }
+
+    private int techniqueOf(UUID player) {
+        Fish fish = fishOf(player);
+        return fish == null ? 50 : fish.technique();
     }
 
     public void decay(double amount) {
@@ -318,9 +323,14 @@ public final class BattleSession {
         }
     }
 
-    private static double gain(double current) {
+    static double gainFactor(int technique) {
+        double value = 0.18 + technique / 250.0;
+        return Math.max(0.18, Math.min(0.55, value));
+    }
+
+    private static double gain(double current, int technique) {
         double remaining = Math.max(0.0, 1.0 - current);
-        double next = current + 0.28 * remaining * remaining;
+        double next = current + gainFactor(technique) * remaining * remaining;
         return Math.min(1.0, next);
     }
 
