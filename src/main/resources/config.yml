@@ -31,64 +31,64 @@ species:
     technique: 70
   kob:
     name: "コブダイ"
-    hp: 60
-    power: 55
-    technique: 45
-  sunstreak:
-    name: "スジモヨウ"
-    hp: 45
-    power: 55
-    technique: 60
-  snooper:
-    name: "ハナビレ"
-    hp: 55
-    power: 50
-    technique: 55
-  dasher:
-    name: "セイブン"
-    hp: 40
-    power: 60
-    technique: 60
-  brinely:
-    name: "ブリナ"
-    hp: 65
-    power: 50
-    technique: 45
-  spotty:
-    name: "スポッティ"
     hp: 55
     power: 55
     technique: 50
-  flopper:
-    name: "フロッパー"
-    hp: 70
-    power: 45
-    technique: 45
-  stripey:
-    name: "シマシマ"
-    hp: 50
-    power: 55
-    technique: 55
-  glitter:
-    name: "キラキラ"
+  sunstreak:
+    name: "スジモヨウ"
     hp: 45
     power: 50
     technique: 65
+  snooper:
+    name: "ハナビレ"
+    hp: 50
+    power: 50
+    technique: 60
+  dasher:
+    name: "セイブン"
+    hp: 40
+    power: 55
+    technique: 65
+  brinely:
+    name: "ブリナ"
+    hp: 60
+    power: 50
+    technique: 50
+  spotty:
+    name: "スポッティ"
+    hp: 50
+    power: 55
+    technique: 55
+  flopper:
+    name: "フロッパー"
+    hp: 65
+    power: 45
+    technique: 50
+  stripey:
+    name: "シマシマ"
+    hp: 45
+    power: 55
+    technique: 60
+  glitter:
+    name: "キラキラ"
+    hp: 50
+    power: 50
+    technique: 60
   blockfish:
     name: "ブロック"
-    hp: 75
+    hp: 70
     power: 60
-    technique: 25
+    technique: 30
   betty:
     name: "ベティ"
-    hp: 55
+    hp: 50
     power: 65
-    technique: 40
+    technique: 45
   clayfish:
     name: "クレイ"
-    hp: 65
+    hp: 60
     power: 60
-    technique: 35
+    technique: 40
   lucy:
     name: "ルーシー"
     hp: 55

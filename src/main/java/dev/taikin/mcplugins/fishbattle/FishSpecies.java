@@ -21,18 +21,18 @@ public record FishSpecies(String key, String name, int hp, int power, int techni
         register("pufferfish", "フグ", 65, 55, 30);
         register("tadpole", "オタマジャクシ", 35, 40, 70);
 
-        pattern(TropicalFish.Pattern.KOB, "コブダイ", 60, 55, 45);
-        pattern(TropicalFish.Pattern.SUNSTREAK, "スジモヨウ", 45, 55, 60);
-        pattern(TropicalFish.Pattern.SNOOPER, "ハナビレ", 55, 50, 55);
-        pattern(TropicalFish.Pattern.DASHER, "セイブン", 40, 60, 60);
-        pattern(TropicalFish.Pattern.BRINELY, "ブリナ", 65, 50, 45);
-        pattern(TropicalFish.Pattern.SPOTTY, "スポッティ", 55, 55, 50);
-        pattern(TropicalFish.Pattern.FLOPPER, "フロッパー", 70, 45, 45);
-        pattern(TropicalFish.Pattern.STRIPEY, "シマシマ", 50, 55, 55);
-        pattern(TropicalFish.Pattern.GLITTER, "キラキラ", 45, 50, 65);
-        pattern(TropicalFish.Pattern.BLOCKFISH, "ブロック", 75, 60, 25);
-        pattern(TropicalFish.Pattern.BETTY, "ベティ", 55, 65, 40);
-        pattern(TropicalFish.Pattern.CLAYFISH, "クレイ", 65, 60, 35);
+        pattern(TropicalFish.Pattern.KOB, "コブダイ", 55, 55, 50);
+        pattern(TropicalFish.Pattern.SUNSTREAK, "スジモヨウ", 45, 50, 65);
+        pattern(TropicalFish.Pattern.SNOOPER, "ハナビレ", 50, 50, 60);
+        pattern(TropicalFish.Pattern.DASHER, "セイブン", 40, 55, 65);
+        pattern(TropicalFish.Pattern.BRINELY, "ブリナ", 60, 50, 50);
+        pattern(TropicalFish.Pattern.SPOTTY, "スポッティ", 50, 55, 55);
+        pattern(TropicalFish.Pattern.FLOPPER, "フロッパー", 65, 45, 50);
+        pattern(TropicalFish.Pattern.STRIPEY, "シマシマ", 45, 55, 60);
+        pattern(TropicalFish.Pattern.GLITTER, "キラキラ", 50, 50, 60);
+        pattern(TropicalFish.Pattern.BLOCKFISH, "ブロック", 70, 60, 30);
+        pattern(TropicalFish.Pattern.BETTY, "ベティ", 50, 65, 45);
+        pattern(TropicalFish.Pattern.CLAYFISH, "クレイ", 60, 60, 40);
 
         axolotl(Axolotl.Variant.LUCY, "ルーシー", 55, 50, 50);
         axolotl(Axolotl.Variant.WILD, "ワイルド", 55, 55, 45);
