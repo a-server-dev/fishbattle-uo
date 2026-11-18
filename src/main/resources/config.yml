@@ -1,0 +1,110 @@
+# 魚の種族値（hp=体力, power=強さ, technique=テクニック）
+# 3値の合計が大きいほど必要EXPが増えます（平均は average-total）。
+average-total: 155
+
+species:
+  cod:
+    name: "タラ"
+    hp: 60
+    power: 45
+    technique: 45
+  salmon:
+    name: "サケ"
+    hp: 45
+    power: 60
+    technique: 45
+  pufferfish:
+    name: "フグ"
+    hp: 65
+    power: 55
+    technique: 30
+  tadpole:
+    name: "オタマジャクシ"
+    hp: 45
+    power: 40
+    technique: 60
+  kob:
+    name: "コブダイ"
+    hp: 60
+    power: 55
+    technique: 45
+  sunstreak:
+    name: "スジモヨウ"
+    hp: 45
+    power: 55
+    technique: 60
+  snooper:
+    name: "ハナビレ"
+    hp: 55
+    power: 50
+    technique: 55
+  dasher:
+    name: "セイブン"
+    hp: 40
+    power: 60
+    technique: 60
+  brinely:
+    name: "ブリナ"
+    hp: 65
+    power: 50
+    technique: 45
+  spotty:
+    name: "スポッティ"
+    hp: 55
+    power: 55
+    technique: 50
+  flopper:
+    name: "フロッパー"
+    hp: 70
+    power: 45
+    technique: 45
+  stripey:
+    name: "シマシマ"
+    hp: 50
+    power: 55
+    technique: 55
+  glitter:
+    name: "キラキラ"
+    hp: 45
+    power: 50
+    technique: 65
+  blockfish:
+    name: "ブロック"
+    hp: 75
+    power: 60
+    technique: 25
+  betty:
+    name: "ベティ"
+    hp: 55
+    power: 65
+    technique: 40
+  clayfish:
+    name: "クレイ"
+    hp: 65
+    power: 60
+    technique: 35
+  lucy:
+    name: "ルーシー"
+    hp: 55
+    power: 50
+    technique: 50
+  wild:
+    name: "ワイルド"
+    hp: 55
+    power: 55
+    technique: 45
+  gold:
+    name: "ゴールド"
+    hp: 55
+    power: 60
+    technique: 40
+  cyan:
+    name: "シアン"
+    hp: 45
+    power: 55
+    technique: 55
+  blue:
+    name: "ブルー"
+    hp: 50
+    power: 45
+    technique: 60

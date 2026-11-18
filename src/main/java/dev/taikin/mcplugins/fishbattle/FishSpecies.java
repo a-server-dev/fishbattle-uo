@@ -2,47 +2,77 @@ package dev.taikin.mcplugins.fishbattle;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Axolotl;
 import org.bukkit.entity.TropicalFish;
 
 public record FishSpecies(String key, String name, int hp, int power, int technique) {
 
+    private static final Map<String, FishSpecies> DEFAULTS = new LinkedHashMap<>();
     private static final Map<String, FishSpecies> REGISTRY = new LinkedHashMap<>();
+    private static int averageTotal = 155;
 
     static {
-        REGISTRY.put("cod", new FishSpecies("cod", "タラ", 60, 45, 40));
-        REGISTRY.put("salmon", new FishSpecies("salmon", "サケ", 55, 60, 55));
-        REGISTRY.put("pufferfish", new FishSpecies("pufferfish", "フグ", 65, 55, 30));
-        REGISTRY.put("tadpole", new FishSpecies("tadpole", "オタマジャクシ", 45, 40, 65));
+        register("cod", "タラ", 60, 45, 45);
+        register("salmon", "サケ", 45, 60, 45);
+        register("pufferfish", "フグ", 65, 55, 30);
+        register("tadpole", "オタマジャクシ", 45, 40, 60);
 
-        pattern(TropicalFish.Pattern.KOB, "コブダイ", 55, 50, 40);
+        pattern(TropicalFish.Pattern.KOB, "コブダイ", 60, 55, 45);
         pattern(TropicalFish.Pattern.SUNSTREAK, "スジモヨウ", 45, 55, 60);
-        pattern(TropicalFish.Pattern.SNOOPER, "ハナビレ", 50, 45, 45);
-        pattern(TropicalFish.Pattern.DASHER, "セイブン", 40, 60, 70);
-        pattern(TropicalFish.Pattern.BRINELY, "ブリナ", 60, 45, 40);
-        pattern(TropicalFish.Pattern.SPOTTY, "スポッティ", 50, 50, 50);
-        pattern(TropicalFish.Pattern.FLOPPER, "フロッパー", 65, 40, 35);
-        pattern(TropicalFish.Pattern.STRIPEY, "シマシマ", 45, 55, 55);
-        pattern(TropicalFish.Pattern.GLITTER, "キラキラ", 40, 50, 75);
-        pattern(TropicalFish.Pattern.BLOCKFISH, "ブロック", 70, 55, 25);
-        pattern(TropicalFish.Pattern.BETTY, "ベティ", 50, 65, 50);
-        pattern(TropicalFish.Pattern.CLAYFISH, "クレイ", 60, 60, 30);
+        pattern(TropicalFish.Pattern.SNOOPER, "ハナビレ", 55, 50, 55);
+        pattern(TropicalFish.Pattern.DASHER, "セイブン", 40, 60, 60);
+        pattern(TropicalFish.Pattern.BRINELY, "ブリナ", 65, 50, 45);
+        pattern(TropicalFish.Pattern.SPOTTY, "スポッティ", 55, 55, 50);
+        pattern(TropicalFish.Pattern.FLOPPER, "フロッパー", 70, 45, 45);
+        pattern(TropicalFish.Pattern.STRIPEY, "シマシマ", 50, 55, 55);
+        pattern(TropicalFish.Pattern.GLITTER, "キラキラ", 45, 50, 65);
+        pattern(TropicalFish.Pattern.BLOCKFISH, "ブロック", 75, 60, 25);
+        pattern(TropicalFish.Pattern.BETTY, "ベティ", 55, 65, 40);
+        pattern(TropicalFish.Pattern.CLAYFISH, "クレイ", 65, 60, 35);
 
         axolotl(Axolotl.Variant.LUCY, "ルーシー", 55, 50, 50);
-        axolotl(Axolotl.Variant.WILD, "ワイルド", 50, 55, 45);
-        axolotl(Axolotl.Variant.GOLD, "ゴールド", 60, 60, 45);
-        axolotl(Axolotl.Variant.CYAN, "シアン", 45, 55, 60);
-        axolotl(Axolotl.Variant.BLUE, "ブルー", 50, 45, 70);
+        axolotl(Axolotl.Variant.WILD, "ワイルド", 55, 55, 45);
+        axolotl(Axolotl.Variant.GOLD, "ゴールド", 55, 60, 40);
+        axolotl(Axolotl.Variant.CYAN, "シアン", 45, 55, 55);
+        axolotl(Axolotl.Variant.BLUE, "ブルー", 50, 45, 60);
     }
 
     private static void pattern(TropicalFish.Pattern pattern, String name, int hp, int power, int technique) {
-        REGISTRY.put("tropical:" + pattern.name(),
-                new FishSpecies("tropical:" + pattern.name(), name, hp, power, technique));
+        register("tropical:" + pattern.name(), name, hp, power, technique);
+    }
+
+    private static void register(String key, String name, int hp, int power, int technique) {
+        DEFAULTS.put(key, new FishSpecies(key, name, hp, power, technique));
+        REGISTRY.put(key, DEFAULTS.get(key));
+    }
+
+    public static void loadConfig(ConfigurationSection section) {
+        REGISTRY.clear();
+        if (section == null) {
+            REGISTRY.putAll(DEFAULTS);
+            return;
+        }
+        for (Map.Entry<String, FishSpecies> entry : DEFAULTS.entrySet()) {
+            FishSpecies def = entry.getValue();
+            ConfigurationSection sub = section.getConfigurationSection(shortId(entry.getKey()));
+            if (sub == null) {
+                REGISTRY.put(entry.getKey(), def);
+                continue;
+            }
+            REGISTRY.put(entry.getKey(), new FishSpecies(entry.getKey(), def.name(),
+                    Math.max(1, sub.getInt("hp", def.hp())),
+                    Math.max(1, sub.getInt("power", def.power())),
+                    Math.max(1, sub.getInt("technique", def.technique()))));
+        }
+    }
+
+    public static void setAverageTotal(int value) {
+        averageTotal = Math.max(1, value);
     }
 
     private static void axolotl(Axolotl.Variant variant, String name, int hp, int power, int technique) {
-        REGISTRY.put("axolotl:" + variant.name(),
-                new FishSpecies("axolotl:" + variant.name(), name, hp, power, technique));
+        register("axolotl:" + variant.name(), name, hp, power, technique);
     }
 
     public int total() {
@@ -50,10 +80,8 @@ public record FishSpecies(String key, String name, int hp, int power, int techni
     }
 
     public double expMultiplier() {
-        return 1.0 + (total() - AVERAGE_TOTAL) / (double) AVERAGE_TOTAL;
+        return 1.0 + (total() - averageTotal) / (double) averageTotal;
     }
-
-    private static final int AVERAGE_TOTAL = 155;
 
     public static java.util.List<String> allKeys() {
         return new java.util.ArrayList<>(REGISTRY.keySet());

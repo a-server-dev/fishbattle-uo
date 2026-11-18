@@ -96,6 +96,9 @@ public final class FishCommand {
                                         .suggests(this::suggestHands)
                                         .executes(context -> petUntrain(context.getSource().getSender(),
                                                 StringArgumentType.getString(context, "hand"))))))
+                .then(Commands.literal("reload")
+                        .requires(source -> source.getSender().hasPermission("uobattle.admin"))
+                        .executes(context -> reload(context.getSource().getSender())))
                 .then(Commands.literal("species")
                         .executes(context -> species(context.getSource().getSender())))
                 .then(Commands.literal("bucket")
@@ -247,6 +250,7 @@ public final class FishCommand {
         sender.sendMessage(Component.text("/uo bucket [player]  捕獲バケツを入手", NamedTextColor.GRAY));
         sender.sendMessage(Component.text("/uo card <player> [技]  技カードを配布（管理者）", NamedTextColor.GRAY));
         sender.sendMessage(Component.text("/uo clear [all]      出した魚を消す（all は管理者）", NamedTextColor.GRAY));
+        sender.sendMessage(Component.text("/uo reload           config.yml を再読み込み（管理者）", NamedTextColor.GRAY));
         return 1;
     }
 
@@ -319,6 +323,14 @@ public final class FishCommand {
         menu.untrain(player, handName, () -> found[0] = true);
         if (!found[0]) {
             player.sendMessage(Component.text(PREFIX + "gu / choki / pa のいずれかです。", NamedTextColor.RED));
+        }
+        return 1;
+    }
+
+    private int reload(org.bukkit.command.CommandSender sender) {
+        if (Bukkit.getPluginManager().getPlugin("uo") instanceof FishBattlePlugin plugin) {
+            plugin.reloadSpeciesConfig();
+            sender.sendMessage(Component.text(PREFIX + "config.yml を再読み込みしました。", NamedTextColor.GREEN));
         }
         return 1;
     }

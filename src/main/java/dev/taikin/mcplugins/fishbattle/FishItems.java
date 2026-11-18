@@ -135,6 +135,9 @@ public final class FishItems {
     }
 
     public static ItemStack speciesBucket(String speciesKey, int level) {
+        if (level <= 0) {
+            level = CaptureListener.randomCaptureLevel();
+        }
         FishSpecies species = FishSpecies.byKey(speciesKey);
         Rank powerRank = Rank.roll(5, 20, 35);
         Rank hpRank = Rank.roll(5, 20, 35);

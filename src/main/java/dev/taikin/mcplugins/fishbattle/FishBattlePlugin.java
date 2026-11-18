@@ -18,6 +18,7 @@ public final class FishBattlePlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         FishKeys.init(this);
+        loadSpeciesConfig();
         this.motion = new FishMotion(this);
         this.battles = new BattleManager(this, motion);
         motion.start();
@@ -57,6 +58,18 @@ public final class FishBattlePlugin extends JavaPlugin {
             }
         }
         getLogger().info("FishBattle disabled.");
+    }
+
+    public void reloadSpeciesConfig() {
+        reloadConfig();
+        loadSpeciesConfig();
+    }
+
+    private void loadSpeciesConfig() {
+        saveDefaultConfig();
+        FishSpecies.setAverageTotal(getConfig().getInt("average-total", 155));
+        FishSpecies.loadConfig(getConfig().getConfigurationSection("species"));
+        getLogger().info("Loaded species stats from config.yml.");
     }
 
     private void registerCaptureRecipe() {

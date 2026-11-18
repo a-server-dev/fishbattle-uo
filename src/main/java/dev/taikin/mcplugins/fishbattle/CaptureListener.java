@@ -390,6 +390,24 @@ public final class CaptureListener implements Listener {
         pdc.set(FishKeys.ANCHOR_Z, PersistentDataType.DOUBLE, loc.getZ());
     }
 
+    private static int rollLevel() {
+        int roll = ThreadLocalRandom.current().nextInt(100);
+        if (roll < 30) {
+            return 1;
+        }
+        if (roll < 70) {
+            return 2;
+        }
+        if (roll < 90) {
+            return 3;
+        }
+        return 4;
+    }
+
+    public static int randomCaptureLevel() {
+        return rollLevel();
+    }
+
     private static boolean isBucketableFish(Entity entity) {
         return entity instanceof TropicalFish
                 || entity instanceof Axolotl
@@ -419,7 +437,7 @@ public final class CaptureListener implements Listener {
             speciesKey = "pufferfish";
         }
         FishType type = FishType.random();
-        int level = ThreadLocalRandom.current().nextInt(2, 6);
+        int level = rollLevel();
         Rank powerRank = Rank.roll(5, 20, 35);
         Rank hpRank = Rank.roll(5, 20, 35);
         Rank techRank = Rank.roll(5, 20, 35);

@@ -50,13 +50,24 @@ public final class PetMenu {
     private static final int[] SLOT_TECH = {1, 10, 19};
 
     private static final double RANK_TOP = Rank.DIAMOND.multiplier();
-    private static final int MAX_POWER = (int) Math.ceil(RANK_TOP * (FishSpecies.allKeys().stream()
-            .mapToInt(key -> FishSpecies.byKey(key).power()).max().orElse(100) + Fish.MAX_LEVEL));
-    private static final int MAX_HP = (int) Math.ceil(RANK_TOP * (FishSpecies.allKeys().stream()
-            .mapToInt(key -> FishSpecies.byKey(key).hp()).max().orElse(100)
-            + (Fish.MAX_LEVEL - 1) * 2));
-    private static final int MAX_TECH = (int) Math.ceil(RANK_TOP * (FishSpecies.allKeys().stream()
-            .mapToInt(key -> FishSpecies.byKey(key).technique()).max().orElse(100) + Fish.MAX_LEVEL / 2));
+
+    private static int maxPower() {
+        return (int) Math.ceil(RANK_TOP * (FishSpecies.allKeys().stream()
+                .mapToInt(key -> FishSpecies.byKey(key).power()).max().orElse(100)
+                + Fish.MAX_LEVEL * Fish.POWER_PER_LEVEL));
+    }
+
+    private static int maxHp() {
+        return (int) Math.ceil(RANK_TOP * (FishSpecies.allKeys().stream()
+                .mapToInt(key -> FishSpecies.byKey(key).hp()).max().orElse(100)
+                + (Fish.MAX_LEVEL - 1) * Fish.HP_PER_LEVEL));
+    }
+
+    private static int maxTech() {
+        return (int) Math.ceil(RANK_TOP * (FishSpecies.allKeys().stream()
+                .mapToInt(key -> FishSpecies.byKey(key).technique()).max().orElse(100)
+                + Fish.MAX_LEVEL * Fish.TECH_PER_LEVEL));
+    }
 
     private static final int SLOTS = 27;
     private static final int STATS_SLOTS = 45;
@@ -258,13 +269,13 @@ public final class PetMenu {
 
     private void renderStats(Inventory inventory, Fish fish) {
         statRow(inventory, SLOT_POWER_LABEL, SLOT_POWER_RANK, SLOT_POWER_BAR, Material.IRON_SWORD,
-                "強さ", fish.power(), fish.powerRank(), MAX_POWER, NamedTextColor.RED,
+                "強さ", fish.power(), fish.powerRank(), maxPower(), NamedTextColor.RED,
                 "与えるダメージの大きさ");
         statRow(inventory, SLOT_HP_LABEL, SLOT_HP_RANK, SLOT_HP_BAR, Material.GOLDEN_APPLE,
-                "体力", fish.maxHp(), fish.hpRank(), MAX_HP, NamedTextColor.GREEN,
+                "体力", fish.maxHp(), fish.hpRank(), maxHp(), NamedTextColor.GREEN,
                 "HPの高さ（現在 " + fish.hp() + "/" + fish.maxHp() + "）");
         statRow(inventory, SLOT_TECH_LABEL, SLOT_TECH_RANK, SLOT_TECH_BAR, Material.FEATHER,
-                "テクニック", fish.technique(), fish.techRank(), MAX_TECH, NamedTextColor.AQUA,
+                "テクニック", fish.technique(), fish.techRank(), maxTech(), NamedTextColor.AQUA,
                 "気合の溜まりやすさ");
         expRow(inventory, fish);
         inventory.setItem(SLOT_BACK, actionItem(Material.ARROW, "戻る",
