@@ -25,12 +25,12 @@ public final class OtherFishMenu implements Listener {
     private static final int SLOT_INFO = 4;
     private static final int SLOT_HP_LABEL = 9;
     private static final int SLOT_HP_BAR = 10;
-    private static final int SLOT_POWER_LABEL = 11;
-    private static final int SLOT_POWER_BAR = 12;
-    private static final int SLOT_TECH_LABEL = 14;
-    private static final int SLOT_TECH_BAR = 15;
-    private static final int SLOT_MOVES = 18;
-    private static final int SLOT_CHALLENGE = 22;
+    private static final int SLOT_POWER_LABEL = 18;
+    private static final int SLOT_POWER_BAR = 19;
+    private static final int SLOT_TECH_LABEL = 27;
+    private static final int SLOT_TECH_BAR = 28;
+    private static final int SLOT_MOVES = 36;
+    private static final int SLOT_CHALLENGE = 44;
     private static final double DEFAULT_STAKE = 100.0;
 
     private final org.bukkit.plugin.Plugin plugin;
@@ -50,7 +50,7 @@ public final class OtherFishMenu implements Listener {
         String ownerId = entity.getPersistentDataContainer().get(FishKeys.OWNER, PersistentDataType.STRING);
         openMenus.put(player.getUniqueId(), entity.getUniqueId());
         Holder holder = new Holder(entity.getUniqueId());
-        Inventory inventory = Bukkit.createInventory(holder, 27,
+        Inventory inventory = Bukkit.createInventory(holder, 45,
                 Component.text(CaptureListener.ownerName(ownerId) + " の魚", NamedTextColor.DARK_AQUA));
         holder.inventory = inventory;
         render(inventory, fish, ownerId);
