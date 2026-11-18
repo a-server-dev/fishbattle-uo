@@ -96,7 +96,11 @@ public record Fish(String id, FishType type, String speciesKey, int level, int e
     }
 
     public int nextExp() {
-        return level * 20;
+        return expNeeded(level, species());
+    }
+
+    public static int expNeeded(int level, FishSpecies species) {
+        return (int) Math.round(level * 20 * species.expMultiplier());
     }
 
     public Fish withHp(int newHp) {
@@ -108,10 +112,11 @@ public record Fish(String id, FishType type, String speciesKey, int level, int e
     public static final int MAX_LEVEL = 10;
 
     public Fish gainExp(int amount) {
+        FishSpecies species = species();
         int newLevel = level;
         int newExp = exp + amount;
-        while (newLevel < MAX_LEVEL && newExp >= newLevel * 20) {
-            newExp -= newLevel * 20;
+        while (newLevel < MAX_LEVEL && newExp >= expNeeded(newLevel, species)) {
+            newExp -= expNeeded(newLevel, species);
             newLevel++;
         }
         if (newLevel >= MAX_LEVEL) {

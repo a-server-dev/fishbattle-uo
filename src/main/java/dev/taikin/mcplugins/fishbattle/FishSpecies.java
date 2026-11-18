@@ -10,29 +10,29 @@ public record FishSpecies(String key, String name, int hp, int power, int techni
     private static final Map<String, FishSpecies> REGISTRY = new LinkedHashMap<>();
 
     static {
-        REGISTRY.put("cod", new FishSpecies("cod", "タラ", 55, 50, 44));
-        REGISTRY.put("salmon", new FishSpecies("salmon", "サケ", 55, 55, 52));
-        REGISTRY.put("pufferfish", new FishSpecies("pufferfish", "フグ", 60, 55, 40));
-        REGISTRY.put("tadpole", new FishSpecies("tadpole", "オタマジャクシ", 50, 45, 58));
+        REGISTRY.put("cod", new FishSpecies("cod", "タラ", 60, 45, 40));
+        REGISTRY.put("salmon", new FishSpecies("salmon", "サケ", 55, 60, 55));
+        REGISTRY.put("pufferfish", new FishSpecies("pufferfish", "フグ", 65, 55, 30));
+        REGISTRY.put("tadpole", new FishSpecies("tadpole", "オタマジャクシ", 45, 40, 65));
 
-        pattern(TropicalFish.Pattern.KOB, "コブダイ", 55, 50, 44);
-        pattern(TropicalFish.Pattern.SUNSTREAK, "スジモヨウ", 50, 55, 54);
-        pattern(TropicalFish.Pattern.SNOOPER, "ハナビレ", 50, 50, 48);
-        pattern(TropicalFish.Pattern.DASHER, "セイブン", 45, 55, 60);
-        pattern(TropicalFish.Pattern.BRINELY, "ブリナ", 55, 50, 44);
+        pattern(TropicalFish.Pattern.KOB, "コブダイ", 55, 50, 40);
+        pattern(TropicalFish.Pattern.SUNSTREAK, "スジモヨウ", 45, 55, 60);
+        pattern(TropicalFish.Pattern.SNOOPER, "ハナビレ", 50, 45, 45);
+        pattern(TropicalFish.Pattern.DASHER, "セイブン", 40, 60, 70);
+        pattern(TropicalFish.Pattern.BRINELY, "ブリナ", 60, 45, 40);
         pattern(TropicalFish.Pattern.SPOTTY, "スポッティ", 50, 50, 50);
-        pattern(TropicalFish.Pattern.FLOPPER, "フロッパー", 60, 45, 42);
-        pattern(TropicalFish.Pattern.STRIPEY, "シマシマ", 50, 55, 52);
-        pattern(TropicalFish.Pattern.GLITTER, "キラキラ", 45, 50, 62);
-        pattern(TropicalFish.Pattern.BLOCKFISH, "ブロック", 60, 55, 38);
-        pattern(TropicalFish.Pattern.BETTY, "ベティ", 50, 60, 50);
-        pattern(TropicalFish.Pattern.CLAYFISH, "クレイ", 55, 55, 40);
+        pattern(TropicalFish.Pattern.FLOPPER, "フロッパー", 65, 40, 35);
+        pattern(TropicalFish.Pattern.STRIPEY, "シマシマ", 45, 55, 55);
+        pattern(TropicalFish.Pattern.GLITTER, "キラキラ", 40, 50, 75);
+        pattern(TropicalFish.Pattern.BLOCKFISH, "ブロック", 70, 55, 25);
+        pattern(TropicalFish.Pattern.BETTY, "ベティ", 50, 65, 50);
+        pattern(TropicalFish.Pattern.CLAYFISH, "クレイ", 60, 60, 30);
 
         axolotl(Axolotl.Variant.LUCY, "ルーシー", 55, 50, 50);
-        axolotl(Axolotl.Variant.WILD, "ワイルド", 50, 55, 48);
-        axolotl(Axolotl.Variant.GOLD, "ゴールド", 55, 55, 48);
-        axolotl(Axolotl.Variant.CYAN, "シアン", 50, 55, 54);
-        axolotl(Axolotl.Variant.BLUE, "ブルー", 50, 50, 60);
+        axolotl(Axolotl.Variant.WILD, "ワイルド", 50, 55, 45);
+        axolotl(Axolotl.Variant.GOLD, "ゴールド", 60, 60, 45);
+        axolotl(Axolotl.Variant.CYAN, "シアン", 45, 55, 60);
+        axolotl(Axolotl.Variant.BLUE, "ブルー", 50, 45, 70);
     }
 
     private static void pattern(TropicalFish.Pattern pattern, String name, int hp, int power, int technique) {
@@ -44,6 +44,16 @@ public record FishSpecies(String key, String name, int hp, int power, int techni
         REGISTRY.put("axolotl:" + variant.name(),
                 new FishSpecies("axolotl:" + variant.name(), name, hp, power, technique));
     }
+
+    public int total() {
+        return hp + power + technique;
+    }
+
+    public double expMultiplier() {
+        return 1.0 + (total() - AVERAGE_TOTAL) / (double) AVERAGE_TOTAL;
+    }
+
+    private static final int AVERAGE_TOTAL = 155;
 
     public static java.util.List<String> allKeys() {
         return new java.util.ArrayList<>(REGISTRY.keySet());
