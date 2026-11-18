@@ -292,7 +292,7 @@ public final class BattleManager {
                 direction = new Vector(0, 0, 1);
             }
             direction.normalize();
-            center = anchor.clone().add(direction.clone().multiply(2.0));
+            center = anchor.clone().add(direction.clone().multiply(3.0));
         } else {
             center = player.getLocation();
             direction = center.getDirection().setY(0);
