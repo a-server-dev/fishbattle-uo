@@ -236,23 +236,10 @@ public final class FishCommand {
             sender.sendMessage(Component.text("プレイヤーのみ使用できます。", NamedTextColor.RED));
             return 0;
         }
-        int removed = 0;
-        for (var world : Bukkit.getWorlds()) {
-            for (var entity : new java.util.ArrayList<>(world.getEntities())) {
-                if (!DemoVillager.isDemoVillager(entity)) {
-                    continue;
-                }
-                if (entity.getLocation().distanceSquared(player.getLocation()) > 64.0 * 64.0) {
-                    continue;
-                }
-                entity.remove();
-                removed++;
-            }
-        }
-        player.sendMessage(Component.text(PREFIX + (removed == 0
-                ? "近くにデモ村人はいません。"
-                : removed + " 体のデモ村人を消しました。"),
-                removed == 0 ? NamedTextColor.GRAY : NamedTextColor.GREEN));
+        boolean on = DemoVillager.toggleRemovalMode(player.getUniqueId());
+        player.sendMessage(Component.text(PREFIX + (on
+                ? "削除モードON。デモ村人を殴ると消えます（もう一度コマンドで解除）。"
+                : "削除モードOFF。"), on ? NamedTextColor.GREEN : NamedTextColor.GRAY));
         return 1;
     }
 

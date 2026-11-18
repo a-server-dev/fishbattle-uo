@@ -75,9 +75,11 @@ public final class CaptureListener implements Listener {
         Entity entity = event.getAttacked();
         if (DemoVillager.isDemoVillager(entity)) {
             event.setCancelled(true);
-            if (event.getPlayer().hasPermission("uobattle.admin")) {
+            if (DemoVillager.inRemovalMode(event.getPlayer().getUniqueId())
+                    && event.getPlayer().hasPermission("uobattle.admin")) {
                 entity.remove();
-                event.getPlayer().sendMessage(Component.text("デモ村人を消しました。", NamedTextColor.GRAY));
+                event.getPlayer().sendMessage(Component.text("デモ村人を消しました（削除モード継続中）。",
+                        NamedTextColor.GRAY));
             }
             return;
         }

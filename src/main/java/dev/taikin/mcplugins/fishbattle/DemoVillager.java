@@ -38,6 +38,20 @@ public final class DemoVillager {
         }
     }
 
+    private static final java.util.Set<UUID> REMOVAL_MODE = new java.util.HashSet<>();
+
+    public static boolean toggleRemovalMode(UUID player) {
+        if (!REMOVAL_MODE.remove(player)) {
+            REMOVAL_MODE.add(player);
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean inRemovalMode(UUID player) {
+        return REMOVAL_MODE.contains(player);
+    }
+
     public static boolean isDemoVillager(Entity entity) {
         return entity instanceof Villager
                 && entity.getPersistentDataContainer().has(FishKeys.DEMO_VILLAGER, PersistentDataType.BYTE);
