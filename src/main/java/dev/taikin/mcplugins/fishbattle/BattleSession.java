@@ -34,6 +34,8 @@ public final class BattleSession {
     private boolean mashB = true;
     private int mashTierA;
     private int mashTierB;
+    private double gainA = 1.0;
+    private double gainB = 1.0;
     private long lastMashAtA;
     private long lastMashAtB;
     private float savedExpA;
@@ -254,6 +256,8 @@ public final class BattleSession {
         this.lastMashAtB = 0L;
         this.mashTierA = 0;
         this.mashTierB = 0;
+        this.gainA = 1.0;
+        this.gainB = 1.0;
     }
 
     public boolean needsMash(UUID player) {
@@ -270,6 +274,26 @@ public final class BattleSession {
 
     public boolean anyNeedsMash() {
         return mashA || mashB;
+    }
+
+    public double chargeGain(UUID player) {
+        return player.equals(a) ? gainA : gainB;
+    }
+
+    public void setChargeGain(UUID player, double gain) {
+        if (player.equals(a)) {
+            gainA = gain;
+        } else {
+            gainB = gain;
+        }
+    }
+
+    public void addCharge(UUID player, double amount) {
+        if (player.equals(a)) {
+            chargeA = Math.max(0.0, Math.min(1.0, chargeA + amount));
+        } else {
+            chargeB = Math.max(0.0, Math.min(1.0, chargeB + amount));
+        }
     }
 
     public int mashTier(UUID player) {
@@ -293,18 +317,19 @@ public final class BattleSession {
         if (isA) {
             lastMashAtA = now;
             clicksA++;
-            chargeA = gain(chargeA, techniqueOf(player));
+            chargeA = gain(chargeA, techniqueOf(player) * gainA);
         } else {
             lastMashAtB = now;
             clicksB++;
-            chargeB = gain(chargeB, techniqueOf(player));
+            chargeB = gain(chargeB, techniqueOf(player) * gainB);
         }
         return true;
     }
 
-    private int techniqueOf(UUID player) {
+    private double techniqueOf(UUID player) {
         Fish fish = fishOf(player);
-        return fish == null ? 50 : fish.technique();
+        int tech = fish == null ? 50 : fish.technique();
+        return gainFactor(tech);
     }
 
     public void decay(double amount) {
@@ -328,9 +353,9 @@ public final class BattleSession {
         return Math.max(0.03, Math.min(0.25, value));
     }
 
-    private static double gain(double current, int technique) {
+    private static double gain(double current, double factor) {
         double remaining = Math.max(0.0, 1.0 - current);
-        double next = current + gainFactor(technique) * remaining;
+        double next = current + factor * remaining;
         return Math.min(1.0, next);
     }
 

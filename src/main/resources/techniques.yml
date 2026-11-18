@@ -1,6 +1,9 @@
 # 技カード定義。IDを変えると既存の魚から外れます。
-# hand: GU / CHOKI / PA  power: 威力倍率  mash-seconds: 連打時間の延長（秒）
+# hand: GU / CHOKI / PA   power: 威力倍率   mash-seconds: 連打時間の延長（秒）
 # rarity: COMMON / UNCOMMON / RARE / EPIC / LEGENDARY
+# charge-start: 開始気合   charge-gain: 気合の伸び倍率   drain: 相手の気合を奪う割合
+# pierce: 相手気合防御の貫通率   heal: 与ダメージの回復率   ignore-type: 属性不利を無効化
+# tie-power: あいこ押し込み倍率   flat-damage: 固定追加ダメージ
 techniques:
   tackle:
     name: "たいあたり"
@@ -9,108 +12,228 @@ techniques:
     mash-seconds: 0.0
     rarity: COMMON
     description: "基本の体当たり"
-  bite:
-    name: "かみつき"
-    hand: CHOKI
-    power: 1.25
-    mash-seconds: 0.0
-    rarity: UNCOMMON
-    description: "鋭い牙で噛みつく"
-  tail:
-    name: "しっぽビンタ"
-    hand: CHOKI
-    power: 1.20
-    mash-seconds: 0.0
-    rarity: COMMON
-    description: "しっぽで張り倒す"
-  splash:
-    name: "はねあげ"
-    hand: CHOKI
-    power: 1.15
-    mash-seconds: 0.0
-    rarity: COMMON
-    description: "水しぶきを上げる"
   dash:
     name: "とっしん"
     hand: GU
-    power: 1.35
+    power: 1.30
     mash-seconds: 0.0
     rarity: UNCOMMON
-    description: "勢いよく突進する"
+    charge-start: 0.15
+    charge-gain: 1.00
+    drain: 0.00
+    pierce: 0.00
+    heal: 0.00
+    ignore-type: false
+    tie-power: 1.00
+    flat-damage: 0
+    description: "開始気合+15%で飛び出す"
   spin:
     name: "スピンアタック"
     hand: GU
     power: 1.30
     mash-seconds: 0.0
     rarity: UNCOMMON
-    description: "回転しながら体当たり"
-  bubble:
-    name: "バブルビーム"
-    hand: PA
-    power: 1.45
-    mash-seconds: 0.0
-    rarity: RARE
-    description: "泡を撃ち出す"
-  wave:
-    name: "ビッグウェーブ"
-    hand: PA
-    power: 1.60
-    mash-seconds: 0.0
-    rarity: RARE
-    description: "大波で押し流す"
+    charge-start: 0.00
+    charge-gain: 1.00
+    drain: 0.00
+    pierce: 0.00
+    heal: 0.00
+    ignore-type: true
+    tie-power: 1.00
+    flat-damage: 0
+    description: "属性不利を打ち消す"
   thunder:
     name: "かみなり"
     hand: GU
-    power: 1.70
+    power: 1.65
     mash-seconds: 0.0
     rarity: EPIC
-    description: "雷を落とす"
+    charge-start: 0.00
+    charge-gain: 1.00
+    drain: 0.00
+    pierce: 0.50
+    heal: 0.00
+    ignore-type: false
+    tie-power: 1.00
+    flat-damage: 0
+    description: "相手の気合防御を50%貫通"
   blaze:
     name: "ごうかブレイズ"
     hand: GU
-    power: 1.85
+    power: 1.80
     mash-seconds: 0.0
     rarity: EPIC
-    description: "炎をまとって突撃"
+    charge-start: 0.00
+    charge-gain: 1.00
+    drain: 0.15
+    pierce: 0.00
+    heal: 0.00
+    ignore-type: false
+    tie-power: 1.00
+    flat-damage: 0
+    description: "相手の気合を15%吸い取る"
+  finish:
+    name: "とどめの一撃"
+    hand: GU
+    power: 1.90
+    mash-seconds: 0.0
+    rarity: LEGENDARY
+    charge-start: 0.00
+    charge-gain: 1.00
+    drain: 0.00
+    pierce: 0.35
+    heal: 0.00
+    ignore-type: false
+    tie-power: 1.00
+    flat-damage: 5
+    description: "防御貫通35%と固定+5ダメージ"
+  bite:
+    name: "かみつき"
+    hand: CHOKI
+    power: 1.25
+    mash-seconds: 0.0
+    rarity: UNCOMMON
+    charge-start: 0.00
+    charge-gain: 1.00
+    drain: 0.00
+    pierce: 0.00
+    heal: 0.20
+    ignore-type: false
+    tie-power: 1.00
+    flat-damage: 0
+    description: "与ダメージの20%を回復"
+  tail:
+    name: "しっぽビンタ"
+    hand: CHOKI
+    power: 1.20
+    mash-seconds: 0.0
+    rarity: COMMON
+    charge-start: 0.00
+    charge-gain: 1.00
+    drain: 0.08
+    pierce: 0.00
+    heal: 0.00
+    ignore-type: false
+    tie-power: 1.00
+    flat-damage: 0
+    description: "相手の気合を8%吸い取る"
+  splash:
+    name: "はねあげ"
+    hand: CHOKI
+    power: 1.15
+    mash-seconds: 0.0
+    rarity: COMMON
+    charge-start: 0.00
+    charge-gain: 1.50
+    drain: 0.00
+    pierce: 0.00
+    heal: 0.00
+    ignore-type: false
+    tie-power: 1.00
+    flat-damage: 0
+    description: "連打の伸びが1.5倍"
   frost:
     name: "こおりづめ"
-    hand: CHOKI
-    power: 1.55
-    mash-seconds: 0.0
-    rarity: RARE
-    description: "冷気で凍らせる"
-  poison:
-    name: "もうどくばり"
     hand: CHOKI
     power: 1.50
     mash-seconds: 0.0
     rarity: RARE
-    description: "毒針を突き刺す"
+    charge-start: 0.00
+    charge-gain: 1.00
+    drain: 0.18
+    pierce: 0.00
+    heal: 0.00
+    ignore-type: false
+    tie-power: 1.00
+    flat-damage: 0
+    description: "相手の気合を18%凍らせる"
+  poison:
+    name: "もうどくばり"
+    hand: CHOKI
+    power: 1.45
+    mash-seconds: 0.0
+    rarity: RARE
+    charge-start: 0.00
+    charge-gain: 1.00
+    drain: 0.00
+    pierce: 0.00
+    heal: 0.15
+    ignore-type: false
+    tie-power: 1.00
+    flat-damage: 2
+    description: "固定+2ダメージと15%回復"
+  bubble:
+    name: "バブルビーム"
+    hand: PA
+    power: 1.40
+    mash-seconds: 0.0
+    rarity: RARE
+    charge-start: 0.00
+    charge-gain: 1.00
+    drain: 0.00
+    pierce: 0.00
+    heal: 0.00
+    ignore-type: true
+    tie-power: 1.00
+    flat-damage: 0
+    description: "属性不利を打ち消す"
+  wave:
+    name: "ビッグウェーブ"
+    hand: PA
+    power: 1.55
+    mash-seconds: 0.0
+    rarity: RARE
+    charge-start: 0.00
+    charge-gain: 1.00
+    drain: 0.12
+    pierce: 0.00
+    heal: 0.00
+    ignore-type: false
+    tie-power: 1.00
+    flat-damage: 0
+    description: "相手の気合を12%押し流す"
   guard:
     name: "てっぺき"
     hand: PA
     power: 1.00
     mash-seconds: 1.0
     rarity: UNCOMMON
-    description: "防御を固め、連打時間が1秒伸びる"
+    charge-start: 0.20
+    charge-gain: 1.00
+    drain: 0.00
+    pierce: 0.00
+    heal: 0.00
+    ignore-type: false
+    tie-power: 1.00
+    flat-damage: 0
+    description: "開始気合+20%と連打時間+1秒"
   heal:
     name: "いやしのしずく"
     hand: PA
     power: 1.05
     mash-seconds: 1.0
     rarity: UNCOMMON
-    description: "連打時間が1秒伸びる"
+    charge-start: 0.00
+    charge-gain: 1.00
+    drain: 0.00
+    pierce: 0.00
+    heal: 0.30
+    ignore-type: false
+    tie-power: 1.00
+    flat-damage: 0
+    description: "与ダメージの30%回復と連打時間+1秒"
   lucky:
     name: "ラッキーヒット"
     hand: PA
     power: 1.40
     mash-seconds: 0.5
     rarity: RARE
-    description: "運任せ。連打時間が0.5秒伸びる"
-  finish:
-    name: "とどめの一撃"
-    hand: GU
-    power: 2.00
-    mash-seconds: 0.0
-    rarity: LEGENDARY
-    description: "勝負を決める大技"
+    charge-start: 0.00
+    charge-gain: 1.00
+    drain: 0.00
+    pierce: 0.00
+    heal: 0.00
+    ignore-type: false
+    tie-power: 1.60
+    flat-damage: 0
+    description: "あいこの押し込みが1.6倍、連打+0.5秒"

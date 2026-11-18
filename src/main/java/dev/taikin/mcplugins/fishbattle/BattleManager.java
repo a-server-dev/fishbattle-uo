@@ -474,6 +474,7 @@ public final class BattleManager {
         }
         session.setPhase(BattleSession.Phase.MASHING);
         session.resetMash();
+        applyMashTechniques(session);
         double mashSeconds = mashSeconds(session);
         broadcast(session, Component.text("勝った側とあいこは左クリックを連打しろ！ "
                 + String.format("%.1f", mashSeconds)
@@ -509,6 +510,22 @@ public final class BattleManager {
             }
             settleAfterMash(session);
         }, Math.round(mashSeconds * 20.0));
+    }
+
+    private static void applyMashTechniques(BattleSession session) {
+        for (UUID id : new UUID[] {session.playerA(), session.playerB()}) {
+            if (!session.needsMash(id)) {
+                continue;
+            }
+            Technique technique = techniqueOf(session, id);
+            if (technique == null) {
+                continue;
+            }
+            if (technique.chargeStart() > 0) {
+                session.addCharge(id, technique.chargeStart());
+            }
+            session.setChargeGain(id, technique.chargeGain());
+        }
     }
 
     private static double mashSeconds(BattleSession session) {
@@ -851,7 +868,9 @@ public final class BattleManager {
                 Component.text("気合差で押し込む！", NamedTextColor.GOLD));
         effects.duelTitle(Bukkit.getPlayer(loserId), Component.text("あいこ！", NamedTextColor.YELLOW),
                 Component.text("押し込まれた…", NamedTextColor.GRAY));
-        double scale = Math.max(MIN_TIE_ATTACK_SCALE, Math.min(1.0, gap / 0.15));
+        Technique tieTechnique = techniqueOf(session, winnerId);
+        double tieBoost = tieTechnique == null ? 1.0 : tieTechnique.tiePower();
+        double scale = Math.max(MIN_TIE_ATTACK_SCALE, Math.min(1.0, gap / 0.15 * tieBoost));
         scheduleAttack(session, winnerId, loserId, winnerCharge, loserCharge, winnerClicks, scale);
     }
 
@@ -908,14 +927,42 @@ public final class BattleManager {
 
         Technique technique = DamageCalc.bestTechnique(attacker, session.choiceOf(attackerId));
         double techniqueBonus = technique != null ? technique.bonus() : 1.0;
-        int damage = (int) Math.max(1, Math.round(DamageCalc.damage(attacker, target, attackerCharge, defenderCharge,
-                multiplier * techniqueBonus) * clashScale));
+        double effectiveDefense = defenderCharge;
+        if (technique != null && technique.pierce() > 0) {
+            effectiveDefense *= 1.0 - technique.pierce();
+        }
+        double typeMultiplier = multiplier;
+        if (technique != null && technique.ignoreType() && typeMultiplier < 1.0) {
+            typeMultiplier = 1.0;
+        }
+        int damage = (int) Math.max(1, Math.round(DamageCalc.damage(attacker, target, attackerCharge,
+                effectiveDefense, typeMultiplier * techniqueBonus) * clashScale));
+        if (technique != null) {
+            damage += technique.flatDamage();
+        }
 
         Fish damaged = target.withHp(target.hp() - damage);
         session.setFish(defenderId, damaged);
 
         Player attackerPlayer = Bukkit.getPlayer(attackerId);
         Player defender = Bukkit.getPlayer(defenderId);
+
+        if (technique != null && technique.drain() > 0) {
+            double drained = session.charge(defenderId) * technique.drain();
+            session.addCharge(defenderId, -drained);
+            session.addCharge(attackerId, drained);
+            broadcast(session, Component.text("気合を " + Math.round(drained * 100) + "% 吸い取った！",
+                    NamedTextColor.LIGHT_PURPLE));
+        }
+        if (technique != null && technique.heal() > 0) {
+            Fish healed = attacker.withHp(attacker.hp() + Math.max(1, (int) Math.round(damage * technique.heal())));
+            session.setFish(attackerId, healed);
+            if (attackerPlayer != null) {
+                pets.write(session, attackerId, healed);
+            }
+            broadcast(session, Component.text(attacker.displayName() + " は " + (healed.hp() - attacker.hp())
+                    + " 回復した！", NamedTextColor.GREEN));
+        }
 
         if (technique != null) {
             broadcast(session, Component.text("わざ「" + technique.name() + "」！", technique.color()));
