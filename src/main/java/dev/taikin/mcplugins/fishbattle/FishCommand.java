@@ -64,7 +64,10 @@ public final class FishCommand {
                         .executes(context -> demo(context.getSource().getSender()))
                         .then(Commands.literal("npc")
                                 .requires(source -> source.getSender().hasPermission("uobattle.admin"))
-                                .executes(context -> demoVillager(context.getSource().getSender()))))
+                                .executes(context -> demoVillager(context.getSource().getSender()))
+                                .then(Commands.literal("remove")
+                                        .executes(context -> removeDemoVillagers(
+                                                context.getSource().getSender())))))
                 .then(Commands.literal("accept")
                         .executes(context -> accept(context.getSource().getSender())))
                 .then(Commands.literal("deny")
@@ -228,6 +231,31 @@ public final class FishCommand {
         return 1;
     }
 
+    private int removeDemoVillagers(org.bukkit.command.CommandSender sender) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(Component.text("プレイヤーのみ使用できます。", NamedTextColor.RED));
+            return 0;
+        }
+        int removed = 0;
+        for (var world : Bukkit.getWorlds()) {
+            for (var entity : new java.util.ArrayList<>(world.getEntities())) {
+                if (!DemoVillager.isDemoVillager(entity)) {
+                    continue;
+                }
+                if (entity.getLocation().distanceSquared(player.getLocation()) > 64.0 * 64.0) {
+                    continue;
+                }
+                entity.remove();
+                removed++;
+            }
+        }
+        player.sendMessage(Component.text(PREFIX + (removed == 0
+                ? "近くにデモ村人はいません。"
+                : removed + " 体のデモ村人を消しました。"),
+                removed == 0 ? NamedTextColor.GRAY : NamedTextColor.GREEN));
+        return 1;
+    }
+
     private int demo(org.bukkit.command.CommandSender sender) {
         if (!(sender instanceof Player player)) {
             sender.sendMessage(Component.text("プレイヤーのみ使用できます。", NamedTextColor.RED));
@@ -261,6 +289,7 @@ public final class FishCommand {
                 NamedTextColor.GRAY));
         sender.sendMessage(Component.text("/uo demo             NPCとデモバトル", NamedTextColor.GRAY));
         sender.sendMessage(Component.text("/uo demo npc         設定できるデモ村人を置く（管理者）", NamedTextColor.GRAY));
+        sender.sendMessage(Component.text("/uo demo npc remove  近くのデモ村人を消す（管理者）", NamedTextColor.GRAY));
         sender.sendMessage(Component.text("/uo battle demo      NPCとデモバトル", NamedTextColor.GRAY));
         sender.sendMessage(Component.text("/uo battle stop      バトルを降参して終了", NamedTextColor.GRAY));
         sender.sendMessage(Component.text("/uo accept | deny    申し込みを受ける / 断る", NamedTextColor.GRAY));
