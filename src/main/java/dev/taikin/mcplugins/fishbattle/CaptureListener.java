@@ -379,6 +379,9 @@ public final class CaptureListener implements Listener {
         if (!fish.techniques().isEmpty()) {
             pdc.set(FishKeys.TECHNIQUES, PersistentDataType.STRING, FishItems.serializeTechniques(fish));
         }
+        pdc.set(FishKeys.RANK_POWER, PersistentDataType.STRING, fish.powerRank().name());
+        pdc.set(FishKeys.RANK_HP, PersistentDataType.STRING, fish.hpRank().name());
+        pdc.set(FishKeys.RANK_TECH, PersistentDataType.STRING, fish.techRank().name());
         entity.customName(FishItems.name(fish));
         entity.setCustomNameVisible(true);
         var loc = entity.getLocation();
@@ -417,7 +420,11 @@ public final class CaptureListener implements Listener {
         }
         FishType type = FishType.random();
         int level = ThreadLocalRandom.current().nextInt(2, 6);
+        Rank powerRank = Rank.roll(5, 20, 35);
+        Rank hpRank = Rank.roll(5, 20, 35);
+        Rank techRank = Rank.roll(5, 20, 35);
         return new Fish(UUID.randomUUID().toString(), type, speciesKey, level, 0,
-                Fish.maxHp(FishSpecies.byKey(speciesKey), level), "", java.util.Map.of());
+                Fish.maxHp(FishSpecies.byKey(speciesKey), level, hpRank), "", java.util.Map.of(),
+                powerRank, hpRank, techRank);
     }
 }

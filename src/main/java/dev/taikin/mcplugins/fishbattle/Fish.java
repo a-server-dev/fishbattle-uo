@@ -4,13 +4,22 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public record Fish(String id, FishType type, String speciesKey, int level, int exp, int hp, String nick,
-        Map<Rps, String> techniques) {
+        Map<Rps, String> techniques, Rank powerRank, Rank hpRank, Rank techRank) {
 
     public Fish {
         if (techniques == null || techniques.isEmpty()) {
             techniques = Map.of();
         } else {
             techniques = Map.copyOf(techniques);
+        }
+        if (powerRank == null) {
+            powerRank = Rank.COPPER;
+        }
+        if (hpRank == null) {
+            hpRank = Rank.COPPER;
+        }
+        if (techRank == null) {
+            techRank = Rank.COPPER;
         }
     }
 
@@ -45,7 +54,8 @@ public record Fish(String id, FishType type, String speciesKey, int level, int e
         } else {
             next.put(hand, id);
         }
-        return new Fish(this.id, this.type, this.speciesKey, this.level, this.exp, this.hp, this.nick, next);
+        return new Fish(this.id, this.type, this.speciesKey, this.level, this.exp, this.hp, this.nick, next,
+                this.powerRank, this.hpRank, this.techRank);
     }
 
     public Fish withoutTechnique(Rps hand) {
@@ -53,7 +63,8 @@ public record Fish(String id, FishType type, String speciesKey, int level, int e
     }
 
     public Fish withTechniques(Map<Rps, String> next) {
-        return new Fish(this.id, this.type, this.speciesKey, this.level, this.exp, this.hp, this.nick, next);
+        return new Fish(this.id, this.type, this.speciesKey, this.level, this.exp, this.hp, this.nick, next,
+                this.powerRank, this.hpRank, this.techRank);
     }
 
     public String displayName() {
@@ -65,15 +76,23 @@ public record Fish(String id, FishType type, String speciesKey, int level, int e
     }
 
     public int maxHp() {
-        return maxHp(species(), level);
+        return scaled(maxHp(species(), level), hpRank);
+    }
+
+    public int maxHpAt(int newLevel) {
+        return scaled(maxHp(species(), newLevel), hpRank);
     }
 
     public int power() {
-        return species().power() + level;
+        return scaled(species().power() + level, powerRank);
     }
 
     public int technique() {
-        return species().technique() + level / 2;
+        return scaled(species().technique() + level / 2, techRank);
+    }
+
+    private static int scaled(int value, Rank rank) {
+        return Math.max(1, (int) Math.round(value * (rank == null ? 1.0 : rank.multiplier())));
     }
 
     public int nextExp() {
@@ -82,7 +101,8 @@ public record Fish(String id, FishType type, String speciesKey, int level, int e
 
     public Fish withHp(int newHp) {
         return new Fish(this.id, this.type, this.speciesKey, this.level, this.exp,
-                Math.max(0, Math.min(newHp, maxHp())), this.nick, this.techniques);
+                Math.max(0, Math.min(newHp, maxHp())), this.nick, this.techniques,
+                this.powerRank, this.hpRank, this.techRank);
     }
 
     public static final int MAX_LEVEL = 10;
@@ -97,11 +117,16 @@ public record Fish(String id, FishType type, String speciesKey, int level, int e
         if (newLevel >= MAX_LEVEL) {
             newExp = 0;
         }
-        int newHp = newLevel > level ? maxHp(species(), newLevel) : hp;
-        return new Fish(this.id, this.type, this.speciesKey, newLevel, newExp, newHp, this.nick, this.techniques);
+        int newHp = newLevel > level ? maxHpAt(newLevel) : hp;
+        return new Fish(this.id, this.type, this.speciesKey, newLevel, newExp, newHp, this.nick,
+                this.techniques, this.powerRank, this.hpRank, this.techRank);
     }
 
     public static int maxHp(FishSpecies species, int level) {
         return species.hp() + (level - 1) * 2;
+    }
+
+    public static int maxHp(FishSpecies species, int level, Rank hpRank) {
+        return scaled(species.hp() + (level - 1) * 2, hpRank);
     }
 }

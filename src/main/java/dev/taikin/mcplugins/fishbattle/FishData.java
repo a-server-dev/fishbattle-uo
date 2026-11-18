@@ -31,10 +31,13 @@ public final class FishData {
         Integer hp = pdc.get(FishKeys.HP, PersistentDataType.INTEGER);
         String nick = pdc.get(FishKeys.NICK, PersistentDataType.STRING);
         String techniquesRaw = pdc.get(FishKeys.TECHNIQUES, PersistentDataType.STRING);
-        int max = Fish.maxHp(FishSpecies.byKey(species), level);
+        Rank powerRank = Rank.parse(pdc.get(FishKeys.RANK_POWER, PersistentDataType.STRING));
+        Rank hpRank = Rank.parse(pdc.get(FishKeys.RANK_HP, PersistentDataType.STRING));
+        Rank techRank = Rank.parse(pdc.get(FishKeys.RANK_TECH, PersistentDataType.STRING));
+        int max = Fish.maxHp(FishSpecies.byKey(species), level, hpRank);
         return new Fish(id, type, species, level, exp == null ? 0 : exp,
                 hp == null ? max : Math.min(hp, max), nick == null ? "" : nick,
-                FishItems.parseTechniques(techniquesRaw));
+                FishItems.parseTechniques(techniquesRaw), powerRank, hpRank, techRank);
     }
 
     public static void write(Entity entity, Fish fish) {
@@ -55,6 +58,9 @@ public final class FishData {
         } else {
             pdc.set(FishKeys.TECHNIQUES, PersistentDataType.STRING, FishItems.serializeTechniques(fish));
         }
+        pdc.set(FishKeys.RANK_POWER, PersistentDataType.STRING, fish.powerRank().name());
+        pdc.set(FishKeys.RANK_HP, PersistentDataType.STRING, fish.hpRank().name());
+        pdc.set(FishKeys.RANK_TECH, PersistentDataType.STRING, fish.techRank().name());
         entity.customName(FishItems.name(fish));
         entity.setCustomNameVisible(true);
     }

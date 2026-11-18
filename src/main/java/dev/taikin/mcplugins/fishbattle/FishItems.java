@@ -85,9 +85,13 @@ public final class FishItems {
         } catch (IllegalArgumentException e) {
             type = FishType.BLUE;
         }
-        int max = Fish.maxHp(FishSpecies.byKey(species), level);
+        Rank powerRank = Rank.parse(pdc.get(FishKeys.RANK_POWER, PersistentDataType.STRING));
+        Rank hpRank = Rank.parse(pdc.get(FishKeys.RANK_HP, PersistentDataType.STRING));
+        Rank techRank = Rank.parse(pdc.get(FishKeys.RANK_TECH, PersistentDataType.STRING));
+        int max = Fish.maxHp(FishSpecies.byKey(species), level, hpRank);
         return new Fish(id, type, species, level, exp == null ? 0 : exp,
-                hp == null ? max : Math.min(hp, max), nick == null ? "" : nick, parseTechniques(techniquesRaw));
+                hp == null ? max : Math.min(hp, max), nick == null ? "" : nick,
+                parseTechniques(techniquesRaw), powerRank, hpRank, techRank);
     }
 
     public static void write(ItemStack item, Fish fish) {
@@ -109,6 +113,9 @@ public final class FishItems {
             } else {
                 pdc.set(FishKeys.TECHNIQUES, PersistentDataType.STRING, serializeTechniques(fish));
             }
+            pdc.set(FishKeys.RANK_POWER, PersistentDataType.STRING, fish.powerRank().name());
+            pdc.set(FishKeys.RANK_HP, PersistentDataType.STRING, fish.hpRank().name());
+            pdc.set(FishKeys.RANK_TECH, PersistentDataType.STRING, fish.techRank().name());
             meta.customName(name(fish));
             meta.lore(lore(fish));
             addGlint(meta);
@@ -124,16 +131,16 @@ public final class FishItems {
     public static ItemStack randomBucket(FishType type, int level) {
         java.util.List<String> keys = FishSpecies.allKeys();
         String key = keys.get(ThreadLocalRandom.current().nextInt(keys.size()));
-        FishSpecies species = FishSpecies.byKey(key);
-        Fish fish = new Fish(java.util.UUID.randomUUID().toString(), type, key, level, 0,
-                Fish.maxHp(species, level), "", java.util.Map.of());
-        return bucketFor(fish);
+        return speciesBucket(key, level);
     }
 
     public static ItemStack speciesBucket(String speciesKey, int level) {
         FishSpecies species = FishSpecies.byKey(speciesKey);
+        Rank powerRank = Rank.roll(5, 20, 35);
+        Rank hpRank = Rank.roll(5, 20, 35);
+        Rank techRank = Rank.roll(5, 20, 35);
         Fish fish = new Fish(java.util.UUID.randomUUID().toString(), FishType.random(), speciesKey, level, 0,
-                Fish.maxHp(species, level), "", java.util.Map.of());
+                Fish.maxHp(species, level, hpRank), "", java.util.Map.of(), powerRank, hpRank, techRank);
         return bucketFor(fish);
     }
 
@@ -154,7 +161,9 @@ public final class FishItems {
         return List.of(
                 line("属性: " + fish.type().label(), fish.type().color()),
                 line("HP: " + fish.hp() + " / " + fish.maxHp(), NamedTextColor.RED),
-                line("強さ " + fish.power() + "  体力 " + fish.maxHp() + "  テクニック " + fish.technique(),
+                line("強さ " + fish.power() + " " + fish.powerRank().label()
+                        + "  体力 " + fish.maxHp() + " " + fish.hpRank().label()
+                        + "  テクニック " + fish.technique() + " " + fish.techRank().label(),
                         NamedTextColor.GRAY),
                 line("技: " + techniqueSummary(fish), NamedTextColor.AQUA),
                 line("Lv" + fish.level() + " / つぎまで "

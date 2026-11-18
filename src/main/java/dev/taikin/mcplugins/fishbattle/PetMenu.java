@@ -46,13 +46,14 @@ public final class PetMenu {
     private static final int[] HAND_ICON = {0, 9, 18};
     private static final int[] SLOT_TECH = {1, 10, 19};
 
-    private static final int MAX_POWER = FishSpecies.allKeys().stream()
-            .mapToInt(key -> FishSpecies.byKey(key).power()).max().orElse(100) + Fish.MAX_LEVEL;
-    private static final int MAX_HP = FishSpecies.allKeys().stream()
+    private static final double RANK_TOP = Rank.DIAMOND.multiplier();
+    private static final int MAX_POWER = (int) Math.ceil(RANK_TOP * (FishSpecies.allKeys().stream()
+            .mapToInt(key -> FishSpecies.byKey(key).power()).max().orElse(100) + Fish.MAX_LEVEL));
+    private static final int MAX_HP = (int) Math.ceil(RANK_TOP * (FishSpecies.allKeys().stream()
             .mapToInt(key -> FishSpecies.byKey(key).hp()).max().orElse(100)
-            + (Fish.MAX_LEVEL - 1) * 2;
-    private static final int MAX_TECH = FishSpecies.allKeys().stream()
-            .mapToInt(key -> FishSpecies.byKey(key).technique()).max().orElse(100) + Fish.MAX_LEVEL / 2;
+            + (Fish.MAX_LEVEL - 1) * 2));
+    private static final int MAX_TECH = (int) Math.ceil(RANK_TOP * (FishSpecies.allKeys().stream()
+            .mapToInt(key -> FishSpecies.byKey(key).technique()).max().orElse(100) + Fish.MAX_LEVEL / 2));
 
     private static final int SLOTS = 27;
     private static final int STATS_SLOTS = 45;
@@ -253,28 +254,28 @@ public final class PetMenu {
     }
 
     private void renderStats(Inventory inventory, Fish fish) {
-        statRow(inventory, SLOT_POWER_LABEL, SLOT_POWER_BAR, Material.IRON_SWORD,
-                "強さ", fish.power(), MAX_POWER, NamedTextColor.RED,
-                "与えるダメージの大きさ");
-        statRow(inventory, SLOT_HP_LABEL, SLOT_HP_BAR, Material.GOLDEN_APPLE,
-                "体力", fish.maxHp(), MAX_HP, NamedTextColor.GREEN,
+        statRow(inventory, SLOT_POWER_LABEL, SLOT_POWER_BAR, "強さ", fish.power(),
+                fish.powerRank(), MAX_POWER, NamedTextColor.RED, "与えるダメージの大きさ");
+        statRow(inventory, SLOT_HP_LABEL, SLOT_HP_BAR, "体力", fish.maxHp(),
+                fish.hpRank(), MAX_HP, NamedTextColor.GREEN,
                 "HPの高さ（現在 " + fish.hp() + "/" + fish.maxHp() + "）");
-        statRow(inventory, SLOT_TECH_LABEL, SLOT_TECH_BAR, Material.FEATHER,
-                "テクニック", fish.technique(), MAX_TECH, NamedTextColor.AQUA,
-                "気合の溜まりやすさ");
+        statRow(inventory, SLOT_TECH_LABEL, SLOT_TECH_BAR, "テクニック", fish.technique(),
+                fish.techRank(), MAX_TECH, NamedTextColor.AQUA, "気合の溜まりやすさ");
         expRow(inventory, fish);
         inventory.setItem(SLOT_BACK, actionItem(Material.ARROW, "戻る",
                 NamedTextColor.WHITE, List.of("設定画面に戻る")));
     }
 
-    private void statRow(Inventory inventory, int labelSlot, int barSlot, Material icon,
-            String name, int value, int max, NamedTextColor color, String hint) {
+    private void statRow(Inventory inventory, int labelSlot, int barSlot, String name, int value,
+            Rank rank, int max, NamedTextColor color, String hint) {
         int clamped = Math.max(0, Math.min(value, max));
-        ItemStack label = new ItemStack(icon);
+        ItemStack label = new ItemStack(rank.icon());
         label.editMeta(meta -> {
-            meta.customName(Component.text(name + ": " + value, color)
+            meta.customName(Component.text(rank.label() + " " + name + ": " + value, rank.color())
                     .decoration(TextDecoration.ITALIC, false));
             meta.lore(List.of(line(hint, NamedTextColor.GRAY),
+                    line("個体値: " + rank.label() + "（x" + String.format("%.2f", rank.multiplier())
+                            + "）", rank.color()),
                     line("最大 " + max + " 中の " + clamped, NamedTextColor.DARK_GRAY)));
         });
         inventory.setItem(labelSlot, label);
@@ -342,6 +343,8 @@ public final class PetMenu {
             meta.customName(FishItems.name(fish));
             List<Component> lore = new ArrayList<>();
             lore.add(line("属性: " + fish.type().label(), fish.type().color()));
+            lore.add(line("個体値: " + fish.powerRank().label() + " / "
+                    + fish.hpRank().label() + " / " + fish.techRank().label(), NamedTextColor.GOLD));
             lore.add(line("HP " + fish.hp() + " / " + fish.maxHp(), NamedTextColor.RED));
             lore.add(line("Lv" + fish.level() + " / つぎまで "
                     + Math.max(0, fish.nextExp() - fish.exp()) + " EXP", NamedTextColor.AQUA));
