@@ -159,8 +159,8 @@ public final class FishItems {
 
     public static List<Component> lore(Fish fish) {
         return List.of(
-                line(fish.displayName(), NamedTextColor.WHITE),
-                line("属性: " + fish.type().label(), fish.type().color()));
+                line("属性: " + fish.type().label(), fish.type().color()),
+                line("Lv" + fish.level(), NamedTextColor.AQUA));
     }
 
     private static ItemStack createBucket(String speciesKey, FishType type) {
