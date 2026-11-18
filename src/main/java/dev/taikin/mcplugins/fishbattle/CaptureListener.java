@@ -172,6 +172,11 @@ public final class CaptureListener implements Listener {
         Entity entity = event.getRightClicked();
         if (DemoVillager.isDemoVillager(entity)) {
             event.setCancelled(true);
+            if (battles != null && battles.inBattle(event.getPlayer().getUniqueId())) {
+                event.getPlayer().sendActionBar(Component.text("バトル中は開けません。",
+                        NamedTextColor.GRAY));
+                return;
+            }
             demoMenu.open(event.getPlayer(), entity);
             return;
         }
@@ -203,6 +208,10 @@ public final class CaptureListener implements Listener {
         if (FishMotion.hasData(entity)) {
             String ownerId = entity.getPersistentDataContainer().get(FishKeys.OWNER, PersistentDataType.STRING);
             event.setCancelled(true);
+            if (battles != null && battles.inBattle(player.getUniqueId())) {
+                player.sendActionBar(Component.text("バトル中は開けません。", NamedTextColor.GRAY));
+                return;
+            }
             if (ownerId == null || ownerId.equals(player.getUniqueId().toString())) {
                 menu.open(player, entity);
             } else if (otherFishMenu != null) {
