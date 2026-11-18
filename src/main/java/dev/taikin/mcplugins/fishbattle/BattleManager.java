@@ -37,6 +37,7 @@ public final class BattleManager {
     private static final int REVEAL_STEP_TICKS = 15;
     private static final int ATTACK_RESULT_TICKS = 40;
     private static final int CHOICE_TIMEOUT_TICKS = 200;
+    private static final double MIN_TIE_ATTACK_SCALE = 0.15;
     private static final double MAX_BATTLE_DISTANCE = 32.0;
     private static final double CHALLENGE_RANGE = 16.0;
 
@@ -801,7 +802,7 @@ public final class BattleManager {
         double gap = Math.abs(chargeA - chargeB);
 
         if (gap <= 0.0) {
-            broadcast(session, Component.text("あいこで互角！ 手を選び直し！", NamedTextColor.YELLOW));
+            broadcast(session, Component.text("あいこで完全に互角！ 手を選び直し！", NamedTextColor.YELLOW));
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 if (session.closed()) {
                     return;
@@ -824,7 +825,7 @@ public final class BattleManager {
                 Component.text("気合差で押し込む！", NamedTextColor.GOLD));
         effects.duelTitle(Bukkit.getPlayer(loserId), Component.text("あいこ！", NamedTextColor.YELLOW),
                 Component.text("押し込まれた…", NamedTextColor.GRAY));
-        double scale = Math.max(0.15, Math.min(1.0, gap / 0.15));
+        double scale = Math.max(MIN_TIE_ATTACK_SCALE, Math.min(1.0, gap / 0.15));
         scheduleAttack(session, winnerId, loserId, winnerCharge, loserCharge, winnerClicks, scale);
     }
 
