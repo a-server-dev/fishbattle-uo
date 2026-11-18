@@ -224,7 +224,7 @@ public final class FishCommand {
         DemoVillager.mark(villager, settings);
         villager.setPersistent(true);
         DemoVillager.attachFish(villager, settings, motion);
-        player.sendMessage(Component.text(PREFIX + "デモの村人を置きました。右クリックで設定できます。",
+        player.sendMessage(Component.text(PREFIX + "うおおじさんを置きました。右クリックで設定できます。",
                 NamedTextColor.GREEN));
         return 1;
     }

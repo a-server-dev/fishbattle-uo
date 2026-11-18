@@ -281,7 +281,7 @@ public final class BattleManager {
                 : settings.toFish();
         UUID npcId = UUID.randomUUID();
         BattleSession session = new BattleSession(player.getUniqueId(), npcId, mine, npcFish);
-        session.setNpc(npcId, "デモの村人");
+        session.setNpc(npcId, "うおおじさん");
         session.setDemo(true);
         session.setPet(player.getUniqueId(), pet.getUniqueId());
 

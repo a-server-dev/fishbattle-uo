@@ -44,10 +44,13 @@ public final class DemoVillagerMenu implements Listener {
         if (!DemoVillager.isDemoVillager(villager)) {
             return;
         }
+        if (villager instanceof org.bukkit.entity.Villager v) {
+            DemoVillager.mark(v, DemoVillager.read(villager));
+        }
         openMenus.put(player.getUniqueId(), villager.getUniqueId());
         Holder holder = new Holder(villager.getUniqueId());
         Inventory inventory = Bukkit.createInventory(holder, 27,
-                Component.text("デモの村人", NamedTextColor.DARK_AQUA));
+                Component.text("うおおじさん", NamedTextColor.DARK_AQUA));
         holder.inventory = inventory;
         render(inventory, villager);
         player.openInventory(inventory);

@@ -61,7 +61,7 @@ public final class DemoVillager {
     public static void mark(Villager villager, Settings settings) {
         villager.getPersistentDataContainer().set(FishKeys.DEMO_VILLAGER, PersistentDataType.BYTE, (byte) 1);
         write(villager, settings);
-        villager.customName(Component.text("デモの村人", NamedTextColor.GOLD)
+        villager.customName(Component.text("うおおじさん", NamedTextColor.GOLD)
                 .decoration(TextDecoration.ITALIC, false));
         villager.setCustomNameVisible(true);
         villager.setAI(false);
