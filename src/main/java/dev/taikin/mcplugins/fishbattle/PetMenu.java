@@ -400,6 +400,10 @@ public final class PetMenu {
             List<Component> lore = new ArrayList<>();
             if (technique != null) {
                 lore.add(line("威力 x" + String.format("%.2f", technique.bonus()), color));
+                if (technique.mashSeconds() > 0) {
+                    lore.add(line("連打時間 +" + String.format("%.1f", technique.mashSeconds()) + "秒",
+                            NamedTextColor.GOLD));
+                }
                 lore.add(line(technique.description(), NamedTextColor.GRAY));
             }
             lore.add(line("クリックで外す", NamedTextColor.RED));

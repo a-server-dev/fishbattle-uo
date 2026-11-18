@@ -29,7 +29,6 @@ import org.bukkit.util.Vector;
 public final class BattleManager {
 
     private static final long MASH_MILLIS = 3000L;
-    private static final int MASH_TICKS = (int) (MASH_MILLIS / 50L);
     private static final long CHOICE_GUI_DELAY_TICKS = 10L;
     private static final int REVEAL_COUNTDOWN_TICKS = 10;
     private static final int RESULT_HOLD_TICKS = 60;
@@ -457,7 +456,7 @@ public final class BattleManager {
                 return;
             }
             if (session.phase() == BattleSession.Phase.MASHING) {
-                session.decay(0.012);
+                session.decay(0.006);
             }
             if (checkDistance(session)) {
                 return;
@@ -475,7 +474,9 @@ public final class BattleManager {
         }
         session.setPhase(BattleSession.Phase.MASHING);
         session.resetMash();
-        broadcast(session, Component.text("勝った側とあいこは左クリックを連打しろ！ " + (MASH_MILLIS / 1000)
+        double mashSeconds = mashSeconds(session);
+        broadcast(session, Component.text("勝った側とあいこは左クリックを連打しろ！ "
+                + String.format("%.1f", mashSeconds)
                 + "秒間（EXPバー＝自分 / ボスバー＝相手）", NamedTextColor.WHITE));
         promptMash(Bukkit.getPlayer(session.playerA()), session.needsMash(session.playerA()));
         promptMash(Bukkit.getPlayer(session.playerB()), session.needsMash(session.playerB()));
@@ -507,7 +508,32 @@ public final class BattleManager {
                 session.setNpcTask(null);
             }
             settleAfterMash(session);
-        }, MASH_TICKS);
+        }, Math.round(mashSeconds * 20.0));
+    }
+
+    private static double mashSeconds(BattleSession session) {
+        UUID attacker = session.attacker();
+        double seconds = MASH_MILLIS / 1000.0;
+        if (attacker != null) {
+            Technique technique = techniqueOf(session, attacker);
+            return seconds + (technique == null ? 0.0 : technique.mashSeconds());
+        }
+        double best = 0.0;
+        for (UUID id : new UUID[] {session.playerA(), session.playerB()}) {
+            Technique technique = techniqueOf(session, id);
+            if (technique != null) {
+                best = Math.max(best, technique.mashSeconds());
+            }
+        }
+        return seconds + best;
+    }
+
+    private static Technique techniqueOf(BattleSession session, UUID id) {
+        Fish fish = session.fishOf(id);
+        if (fish == null) {
+            return null;
+        }
+        return fish.techniqueFor(session.choiceOf(id));
     }
 
     private void promptMash(Player player, boolean needs) {

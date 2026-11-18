@@ -4,7 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import net.kyori.adventure.text.format.NamedTextColor;
 
-public record Technique(String id, String name, double bonus, Rps hand, String description) {
+public record Technique(String id, String name, double bonus, Rps hand, double mashSeconds,
+        String description) {
 
     private static final List<Technique> REGISTRY = new ArrayList<>();
 
@@ -21,14 +22,19 @@ public record Technique(String id, String name, double bonus, Rps hand, String d
         add("blaze", "ごうかブレイズ", 1.85, Rps.GU, "炎をまとって突撃");
         add("frost", "こおりづめ", 1.55, Rps.CHOKI, "冷気で凍らせる");
         add("poison", "もうどくばり", 1.50, Rps.CHOKI, "毒針を突き刺す");
-        add("guard", "てっぺき", 1.00, Rps.PA, "防御を固める");
-        add("heal", "いやしのしずく", 1.05, Rps.PA, "体力を少し回復する");
-        add("lucky", "ラッキーヒット", 1.40, Rps.PA, "運任せの一撃");
+        addMash("guard", "てっぺき", 1.00, Rps.PA, 1.0, "防御を固め、連打時間が1秒伸びる");
+        addMash("heal", "いやしのしずく", 1.05, Rps.PA, 1.0, "連打時間が1秒伸びる");
+        addMash("lucky", "ラッキーヒット", 1.40, Rps.PA, 0.5, "運任せ。連打時間が0.5秒伸びる");
         add("finish", "とどめの一撃", 2.00, Rps.GU, "勝負を決める大技");
     }
 
     private static void add(String id, String name, double bonus, Rps hand, String description) {
-        REGISTRY.add(new Technique(id, name, bonus, hand, description));
+        REGISTRY.add(new Technique(id, name, bonus, hand, 0.0, description));
+    }
+
+    private static void addMash(String id, String name, double bonus, Rps hand, double mashSeconds,
+            String description) {
+        REGISTRY.add(new Technique(id, name, bonus, hand, mashSeconds, description));
     }
 
     public static List<Technique> all() {

@@ -21,11 +21,17 @@ public final class TechniqueItem {
             pdc.set(FishKeys.TECHNIQUES, PersistentDataType.STRING, technique.id());
             meta.customName(Component.text("技カード: " + technique.name(), technique.color())
                     .decoration(TextDecoration.ITALIC, false));
-            meta.lore(List.of(
-                    line(technique.hand().emoji() + " " + technique.hand().label() + " 用", technique.hand().color()),
-                    line("威力 x" + String.format("%.2f", technique.bonus()), technique.color()),
-                    line(technique.description(), NamedTextColor.GRAY),
-                    line("魚を持って右クリックで装備", NamedTextColor.DARK_GRAY)));
+            java.util.List<Component> lore = new java.util.ArrayList<>();
+            lore.add(line(technique.hand().emoji() + " " + technique.hand().label() + " 用",
+                    technique.hand().color()));
+            lore.add(line("威力 x" + String.format("%.2f", technique.bonus()), technique.color()));
+            if (technique.mashSeconds() > 0) {
+                lore.add(line("連打時間 +" + String.format("%.1f", technique.mashSeconds()) + "秒",
+                        NamedTextColor.GOLD));
+            }
+            lore.add(line(technique.description(), NamedTextColor.GRAY));
+            lore.add(line("魚を持って右クリックで装備", NamedTextColor.DARK_GRAY));
+            meta.lore(lore);
         });
         return item;
     }

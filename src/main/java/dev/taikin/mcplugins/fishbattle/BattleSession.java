@@ -324,8 +324,8 @@ public final class BattleSession {
     }
 
     static double gainFactor(int technique) {
-        double value = technique / 320.0;
-        return Math.max(0.06, Math.min(0.40, value));
+        double value = technique / 700.0;
+        return Math.max(0.03, Math.min(0.25, value));
     }
 
     private static double gain(double current, int technique) {
