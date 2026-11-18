@@ -159,13 +159,8 @@ public final class FishItems {
 
     public static List<Component> lore(Fish fish) {
         return List.of(
-                line("属性: " + fish.type().label(), fish.type().color()),
-                line("HP: " + fish.hp() + " / " + fish.maxHp(), NamedTextColor.RED),
-                line("強さ " + fish.power() + "  体力 " + fish.maxHp()
-                        + "  テクニック " + fish.technique(), NamedTextColor.GRAY),
-                line("技: " + techniqueSummary(fish), NamedTextColor.AQUA),
-                line("Lv" + fish.level() + " / つぎまで "
-                        + Math.max(0, fish.nextExp() - fish.exp()) + " EXP", NamedTextColor.AQUA));
+                line(fish.displayName(), NamedTextColor.WHITE),
+                line("属性: " + fish.type().label(), fish.type().color()));
     }
 
     private static ItemStack createBucket(String speciesKey, FishType type) {
