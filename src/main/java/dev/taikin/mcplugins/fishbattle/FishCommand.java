@@ -153,8 +153,8 @@ public final class FishCommand {
         }
         player.sendMessage(Component.text(PREFIX + "個体情報", NamedTextColor.AQUA));
         player.sendMessage(FishItems.name(fish));
-        player.sendMessage(Component.text("個体値: " + fish.powerRank().label() + " / "
-                + fish.hpRank().label() + " / " + fish.techRank().label(), NamedTextColor.GOLD));
+        player.sendMessage(Component.text("個体値: " + fish.powerRank().display() + " / "
+                + fish.hpRank().display() + " / " + fish.techRank().display(), NamedTextColor.GOLD));
         for (Component line : FishItems.lore(fish)) {
             player.sendMessage(line);
         }

@@ -33,16 +33,19 @@ public final class PetMenu {
     private static final int[] DIVIDER = {2, 11, 20};
 
     private static final int SLOT_POWER_LABEL = 0;
-    private static final int SLOT_POWER_BAR = 1;
+    private static final int SLOT_POWER_RANK = 1;
+    private static final int SLOT_POWER_BAR = 2;
     private static final int SLOT_HP_LABEL = 9;
-    private static final int SLOT_HP_BAR = 10;
+    private static final int SLOT_HP_RANK = 10;
+    private static final int SLOT_HP_BAR = 11;
     private static final int SLOT_TECH_LABEL = 18;
-    private static final int SLOT_TECH_BAR = 19;
+    private static final int SLOT_TECH_RANK = 19;
+    private static final int SLOT_TECH_BAR = 20;
     private static final int SLOT_EXP_LABEL = 27;
     private static final int SLOT_EXP_BAR = 28;
     private static final int SLOT_BACK = 40;
-    private static final int STAT_BARS = 8;
-    private static final int EXP_BARS = 8;
+    private static final int STAT_BARS = 7;
+    private static final int EXP_BARS = 7;
     private static final int[] HAND_ICON = {0, 9, 18};
     private static final int[] SLOT_TECH = {1, 10, 19};
 
@@ -254,35 +257,48 @@ public final class PetMenu {
     }
 
     private void renderStats(Inventory inventory, Fish fish) {
-        statRow(inventory, SLOT_POWER_LABEL, SLOT_POWER_BAR, "強さ", fish.power(),
-                fish.powerRank(), MAX_POWER, NamedTextColor.RED, "与えるダメージの大きさ");
-        statRow(inventory, SLOT_HP_LABEL, SLOT_HP_BAR, "体力", fish.maxHp(),
-                fish.hpRank(), MAX_HP, NamedTextColor.GREEN,
+        statRow(inventory, SLOT_POWER_LABEL, SLOT_POWER_RANK, SLOT_POWER_BAR, Material.IRON_SWORD,
+                "強さ", fish.power(), fish.powerRank(), MAX_POWER, NamedTextColor.RED,
+                "与えるダメージの大きさ");
+        statRow(inventory, SLOT_HP_LABEL, SLOT_HP_RANK, SLOT_HP_BAR, Material.GOLDEN_APPLE,
+                "体力", fish.maxHp(), fish.hpRank(), MAX_HP, NamedTextColor.GREEN,
                 "HPの高さ（現在 " + fish.hp() + "/" + fish.maxHp() + "）");
-        statRow(inventory, SLOT_TECH_LABEL, SLOT_TECH_BAR, "テクニック", fish.technique(),
-                fish.techRank(), MAX_TECH, NamedTextColor.AQUA, "気合の溜まりやすさ");
+        statRow(inventory, SLOT_TECH_LABEL, SLOT_TECH_RANK, SLOT_TECH_BAR, Material.FEATHER,
+                "テクニック", fish.technique(), fish.techRank(), MAX_TECH, NamedTextColor.AQUA,
+                "気合の溜まりやすさ");
         expRow(inventory, fish);
         inventory.setItem(SLOT_BACK, actionItem(Material.ARROW, "戻る",
                 NamedTextColor.WHITE, List.of("設定画面に戻る")));
     }
 
-    private void statRow(Inventory inventory, int labelSlot, int barSlot, String name, int value,
-            Rank rank, int max, NamedTextColor color, String hint) {
+    private void statRow(Inventory inventory, int labelSlot, int rankSlot, int barSlot,
+            Material icon, String name, int value, Rank rank, int max, NamedTextColor color,
+            String hint) {
         int clamped = Math.max(0, Math.min(value, max));
-        ItemStack label = new ItemStack(rank.icon());
+        ItemStack label = new ItemStack(icon);
         label.editMeta(meta -> {
-            meta.customName(Component.text(rank.label() + " " + name + ": " + value, rank.color())
+            meta.customName(Component.text(name + ": " + value, color)
                     .decoration(TextDecoration.ITALIC, false));
             meta.lore(List.of(line(hint, NamedTextColor.GRAY),
-                    line("個体値: " + rank.label() + "（x" + String.format("%.2f", rank.multiplier())
-                            + "）", rank.color()),
                     line("最大 " + max + " 中の " + clamped, NamedTextColor.DARK_GRAY)));
         });
         inventory.setItem(labelSlot, label);
+        inventory.setItem(rankSlot, rankItem(rank, name));
         int filled = max <= 0 ? 0 : (int) Math.round(STAT_BARS * (double) clamped / max);
         for (int i = 0; i < STAT_BARS; i++) {
             inventory.setItem(barSlot + i, barPiece(i < filled, color, name, value, max));
         }
+    }
+
+    private ItemStack rankItem(Rank rank, String name) {
+        ItemStack item = new ItemStack(rank.icon());
+        item.editMeta(meta -> {
+            meta.customName(Component.text(rank.display(), rank.color())
+                    .decoration(TextDecoration.ITALIC, false));
+            meta.lore(List.of(line(name + "の個体値", NamedTextColor.GRAY),
+                    line("補正 x" + String.format("%.2f", rank.multiplier()), rank.color())));
+        });
+        return item;
     }
 
     private void expRow(Inventory inventory, Fish fish) {
@@ -343,8 +359,8 @@ public final class PetMenu {
             meta.customName(FishItems.name(fish));
             List<Component> lore = new ArrayList<>();
             lore.add(line("属性: " + fish.type().label(), fish.type().color()));
-            lore.add(line("個体値: " + fish.powerRank().label() + " / "
-                    + fish.hpRank().label() + " / " + fish.techRank().label(), NamedTextColor.GOLD));
+            lore.add(line("個体値: " + fish.powerRank().display() + " / "
+                    + fish.hpRank().display() + " / " + fish.techRank().display(), NamedTextColor.GOLD));
             lore.add(line("HP " + fish.hp() + " / " + fish.maxHp(), NamedTextColor.RED));
             lore.add(line("Lv" + fish.level() + " / つぎまで "
                     + Math.max(0, fish.nextExp() - fish.exp()) + " EXP", NamedTextColor.AQUA));
