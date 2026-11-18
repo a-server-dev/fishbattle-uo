@@ -73,7 +73,8 @@ public final class BattleListener implements Listener {
             event.setCancelled(true);
         }
         if (event.getEntity().getPersistentDataContainer()
-                .has(FishKeys.DEMO, org.bukkit.persistence.PersistentDataType.BYTE)) {
+                .has(FishKeys.DEMO, org.bukkit.persistence.PersistentDataType.BYTE)
+                || DemoVillager.isDemoVillager(event.getEntity())) {
             event.setCancelled(true);
         }
     }

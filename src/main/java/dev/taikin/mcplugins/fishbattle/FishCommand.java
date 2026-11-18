@@ -61,7 +61,10 @@ public final class FishCommand {
                                                 com.mojang.brigadier.arguments.DoubleArgumentType.getDouble(
                                                         context, "stake"))))))
                 .then(Commands.literal("demo")
-                        .executes(context -> demo(context.getSource().getSender())))
+                        .executes(context -> demo(context.getSource().getSender()))
+                        .then(Commands.literal("npc")
+                                .requires(source -> source.getSender().hasPermission("uobattle.admin"))
+                                .executes(context -> demoVillager(context.getSource().getSender()))))
                 .then(Commands.literal("accept")
                         .executes(context -> accept(context.getSource().getSender())))
                 .then(Commands.literal("deny")
@@ -207,6 +210,27 @@ public final class FishCommand {
         return 1;
     }
 
+    private int demoVillager(org.bukkit.command.CommandSender sender) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(Component.text("プレイヤーのみ使用できます。", NamedTextColor.RED));
+            return 0;
+        }
+        var location = player.getLocation();
+        var direction = location.getDirection().setY(0);
+        if (direction.lengthSquared() < 0.001) {
+            direction = new org.bukkit.util.Vector(0, 0, 1);
+        }
+        direction.normalize();
+        var spawnAt = location.clone().add(direction.multiply(2.5));
+        var villager = player.getWorld().spawn(spawnAt, org.bukkit.entity.Villager.class,
+                org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.CUSTOM);
+        DemoVillager.mark(villager, new DemoVillager.Settings("cod", 5, FishType.BLUE, Rank.COPPER));
+        villager.setPersistent(true);
+        player.sendMessage(Component.text(PREFIX + "デモの村人を置きました。右クリックで設定できます。",
+                NamedTextColor.GREEN));
+        return 1;
+    }
+
     private int demo(org.bukkit.command.CommandSender sender) {
         if (!(sender instanceof Player player)) {
             sender.sendMessage(Component.text("プレイヤーのみ使用できます。", NamedTextColor.RED));
@@ -239,6 +263,7 @@ public final class FishCommand {
         sender.sendMessage(Component.text("/uo battle <player> [賭け金]  相手を指定して申し込む",
                 NamedTextColor.GRAY));
         sender.sendMessage(Component.text("/uo demo             NPCとデモバトル", NamedTextColor.GRAY));
+        sender.sendMessage(Component.text("/uo demo npc         設定できるデモ村人を置く（管理者）", NamedTextColor.GRAY));
         sender.sendMessage(Component.text("/uo battle demo      NPCとデモバトル", NamedTextColor.GRAY));
         sender.sendMessage(Component.text("/uo battle stop      バトルを降参して終了", NamedTextColor.GRAY));
         sender.sendMessage(Component.text("/uo accept | deny    申し込みを受ける / 断る", NamedTextColor.GRAY));

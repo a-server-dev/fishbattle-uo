@@ -237,6 +237,10 @@ public final class BattleManager {
     }
 
     public void startDemo(Player player) {
+        startDemo(player, null);
+    }
+
+    public void startDemo(Player player, DemoVillager.Settings settings) {
         if (inBattle(player.getUniqueId())) {
             player.sendMessage(Component.text("すでにバトル中です。", NamedTextColor.RED));
             return;
@@ -267,7 +271,9 @@ public final class BattleManager {
         if (mine == null) {
             return;
         }
-        Fish npcFish = FishItems.read(FishItems.randomBucket(FishType.random(), 5));
+        Fish npcFish = settings == null
+                ? FishItems.read(FishItems.randomBucket(FishType.random(), 5))
+                : settings.toFish();
         UUID npcId = UUID.randomUUID();
         BattleSession session = new BattleSession(player.getUniqueId(), npcId, mine, npcFish);
         session.setNpc(npcId, "デモの村人");
@@ -302,24 +308,8 @@ public final class BattleManager {
         }
         pets.showBattleNames(session);
 
-        var villager = player.getWorld().spawn(spawnAt, Villager.class,
-                CreatureSpawnEvent.SpawnReason.CUSTOM, v -> {
-                    v.setAI(false);
-                    v.setSilent(true);
-                    v.setInvulnerable(true);
-                    v.setCollidable(false);
-                    v.setGravity(false);
-                    v.setPersistent(false);
-                    v.setRemoveWhenFarAway(true);
-                    v.customName(Component.text("デモの村人",
-                            NamedTextColor.GOLD).decoration(
-                            TextDecoration.ITALIC, false));
-                    v.setCustomNameVisible(true);
-                    v.getPersistentDataContainer().set(FishKeys.DEMO, PersistentDataType.BYTE, (byte) 1);
-                });
-        session.setVillagerId(villager.getUniqueId());
         session.setCenter(midpoint(pet.getLocation(),
-                npcFishEntity != null ? npcFishEntity.getLocation() : villager.getLocation()));
+                npcFishEntity != null ? npcFishEntity.getLocation() : player.getLocation()));
         sessions.put(player.getUniqueId(), session);
         sessions.put(npcId, session);
 

@@ -37,6 +37,7 @@ public final class CaptureListener implements Listener {
     private final org.bukkit.plugin.Plugin plugin;
     private final FishMotion motion;
     private final PetMenu menu;
+    private DemoVillagerMenu demoMenu;
     private BattleManager battles;
 
     public CaptureListener(org.bukkit.plugin.Plugin plugin, FishMotion motion, PetMenu menu) {
@@ -47,6 +48,10 @@ public final class CaptureListener implements Listener {
 
     public void setBattles(BattleManager battles) {
         this.battles = battles;
+    }
+
+    public void setDemoMenu(DemoVillagerMenu demoMenu) {
+        this.demoMenu = demoMenu;
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -146,6 +151,11 @@ public final class CaptureListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onInteractEntity(PlayerInteractEntityEvent event) {
         Entity entity = event.getRightClicked();
+        if (DemoVillager.isDemoVillager(entity)) {
+            event.setCancelled(true);
+            demoMenu.open(event.getPlayer(), entity);
+            return;
+        }
         if (!isBucketableFish(entity)) {
             return;
         }

@@ -25,6 +25,11 @@ public final class FishKeys {
     public static NamespacedKey RANK_POWER;
     public static NamespacedKey RANK_HP;
     public static NamespacedKey RANK_TECH;
+    public static NamespacedKey DEMO_VILLAGER;
+    public static NamespacedKey DEMO_SPECIES;
+    public static NamespacedKey DEMO_LEVEL;
+    public static NamespacedKey DEMO_TYPE;
+    public static NamespacedKey DEMO_RANK;
 
     private FishKeys() {
     }
@@ -50,5 +55,10 @@ public final class FishKeys {
         RANK_POWER = new NamespacedKey(plugin, "rank_power");
         RANK_HP = new NamespacedKey(plugin, "rank_hp");
         RANK_TECH = new NamespacedKey(plugin, "rank_tech");
+        DEMO_VILLAGER = new NamespacedKey(plugin, "demo_villager");
+        DEMO_SPECIES = new NamespacedKey(plugin, "demo_species");
+        DEMO_LEVEL = new NamespacedKey(plugin, "demo_level");
+        DEMO_TYPE = new NamespacedKey(plugin, "demo_type");
+        DEMO_RANK = new NamespacedKey(plugin, "demo_rank");
     }
 }
