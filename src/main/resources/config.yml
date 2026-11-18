@@ -26,9 +26,9 @@ species:
     technique: 30
   tadpole:
     name: "オタマジャクシ"
-    hp: 45
+    hp: 35
     power: 40
-    technique: 60
+    technique: 70
   kob:
     name: "コブダイ"
     hp: 60

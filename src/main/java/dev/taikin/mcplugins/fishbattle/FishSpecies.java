@@ -19,7 +19,7 @@ public record FishSpecies(String key, String name, int hp, int power, int techni
         register("cod", "タラ", 60, 45, 45);
         register("salmon", "サケ", 45, 60, 45);
         register("pufferfish", "フグ", 65, 55, 30);
-        register("tadpole", "オタマジャクシ", 45, 40, 60);
+        register("tadpole", "オタマジャクシ", 35, 40, 70);
 
         pattern(TropicalFish.Pattern.KOB, "コブダイ", 60, 55, 45);
         pattern(TropicalFish.Pattern.SUNSTREAK, "スジモヨウ", 45, 55, 60);
