@@ -31,11 +31,13 @@ public final class DemoVillagerMenu implements Listener {
 
     private final Plugin plugin;
     private final BattleManager battles;
+    private final FishMotion motion;
     private final java.util.Map<UUID, UUID> openMenus = new java.util.HashMap<>();
 
-    public DemoVillagerMenu(Plugin plugin, BattleManager battles) {
+    public DemoVillagerMenu(Plugin plugin, BattleManager battles, FishMotion motion) {
         this.plugin = plugin;
         this.battles = battles;
+        this.motion = motion;
     }
 
     public void open(Player player, Entity villager) {
@@ -150,6 +152,7 @@ public final class DemoVillagerMenu implements Listener {
         }
         DemoVillager.Settings settings = DemoVillager.read(villager);
         int direction = event.isRightClick() ? -1 : 1;
+        boolean changed = true;
         switch (event.getRawSlot()) {
             case SLOT_SPECIES -> DemoVillager.write(villager,
                     DemoVillager.nextSpecies(settings, direction));
@@ -168,9 +171,13 @@ public final class DemoVillagerMenu implements Listener {
                 battles.startDemo(player, settings, villager.getLocation());
                 return;
             }
-            default -> {
-                return;
-            }
+            default -> changed = false;
+        }
+        if (!changed) {
+            return;
+        }
+        if (villager instanceof org.bukkit.entity.Villager v) {
+            DemoVillager.attachFish(v, DemoVillager.read(villager), motion);
         }
         render(event.getView().getTopInventory(), villager);
         player.updateInventory();

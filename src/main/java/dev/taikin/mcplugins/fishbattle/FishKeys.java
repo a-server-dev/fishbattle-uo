@@ -32,6 +32,8 @@ public final class FishKeys {
     public static NamespacedKey DEMO_RANK;
     public static NamespacedKey DEMO_RANK_HP;
     public static NamespacedKey DEMO_RANK_TECH;
+    public static NamespacedKey DEMO_FISH;
+    public static NamespacedKey DEMO_FISH_ANCHOR;
 
     private FishKeys() {
     }
@@ -64,5 +66,7 @@ public final class FishKeys {
         DEMO_RANK = new NamespacedKey(plugin, "demo_rank");
         DEMO_RANK_HP = new NamespacedKey(plugin, "demo_rank_hp");
         DEMO_RANK_TECH = new NamespacedKey(plugin, "demo_rank_tech");
+        DEMO_FISH = new NamespacedKey(plugin, "demo_fish");
+        DEMO_FISH_ANCHOR = new NamespacedKey(plugin, "demo_fish_anchor");
     }
 }

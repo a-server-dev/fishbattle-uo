@@ -29,7 +29,7 @@ public final class FishBattlePlugin extends JavaPlugin {
 
         CaptureListener capture = new CaptureListener(this, motion, menu);
         capture.setBattles(battles);
-        DemoVillagerMenu demoMenu = new DemoVillagerMenu(this, battles);
+        DemoVillagerMenu demoMenu = new DemoVillagerMenu(this, battles, motion);
         capture.setDemoMenu(demoMenu);
         getServer().getPluginManager().registerEvents(capture, this);
         FishItemGuard itemGuard = new FishItemGuard();

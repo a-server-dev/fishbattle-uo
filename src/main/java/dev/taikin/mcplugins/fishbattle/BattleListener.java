@@ -52,7 +52,11 @@ public final class BattleListener implements Listener {
                 event.setCancelled(true);
                 if (DemoVillager.inRemovalMode(player.getUniqueId())
                         && player.hasPermission("uobattle.admin")) {
-                    event.getEntity().remove();
+                    if (event.getEntity() instanceof org.bukkit.entity.Villager villager) {
+                        DemoVillager.remove(villager, motion);
+                    } else {
+                        event.getEntity().remove();
+                    }
                     player.sendMessage(net.kyori.adventure.text.Component.text(
                             "デモ村人を消しました（削除モード継続中）。",
                             net.kyori.adventure.text.format.NamedTextColor.GRAY));

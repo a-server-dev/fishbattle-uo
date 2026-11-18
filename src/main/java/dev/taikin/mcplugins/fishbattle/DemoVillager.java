@@ -6,6 +6,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
+import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Villager;
 import org.bukkit.persistence.PersistentDataType;
@@ -100,6 +101,67 @@ public final class DemoVillager {
         String key = species == null ? "cod" : species;
         int lv = level == null ? 5 : Math.max(1, Math.min(Fish.MAX_LEVEL, level));
         return new Settings(key, lv, type, rank, hpRank, techRank);
+    }
+
+    public static void attachFish(Villager villager, Settings settings, FishMotion motion) {
+        Entity old = fishEntity(villager);
+        if (old != null) {
+            motion.untrack(old);
+            old.remove();
+        }
+        Location base = villager.getLocation();
+        Location spawnAt = base.clone().add(rightOffset(base).multiply(1.4));
+        Entity fish = CaptureListener.spawnFor(settings.toFish(), spawnAt);
+        if (fish == null) {
+            return;
+        }
+        CaptureListener.applyData(fish, settings.toFish());
+        fish.getPersistentDataContainer().set(FishKeys.OWNER, PersistentDataType.STRING,
+                villager.getUniqueId().toString());
+        fish.setPersistent(true);
+        fish.getPersistentDataContainer().set(FishKeys.DEMO_FISH, PersistentDataType.STRING,
+                villager.getUniqueId().toString());
+        villager.getPersistentDataContainer().set(FishKeys.DEMO_FISH_ANCHOR, PersistentDataType.STRING,
+                fish.getUniqueId().toString());
+        motion.track(fish);
+        motion.setFollow(fish, false);
+        motion.place(fish, spawnAt);
+    }
+
+    public static void remove(Villager villager, FishMotion motion) {
+        Entity fish = fishEntity(villager);
+        if (fish != null) {
+            motion.untrack(fish);
+            fish.remove();
+        }
+        villager.remove();
+    }
+
+    public static Entity fishEntity(Entity villager) {
+        String id = villager.getPersistentDataContainer().get(FishKeys.DEMO_FISH_ANCHOR,
+                PersistentDataType.STRING);
+        if (id != null) {
+            try {
+                Entity tracked = org.bukkit.Bukkit.getEntity(UUID.fromString(id));
+                if (tracked != null && tracked.isValid()) {
+                    return tracked;
+                }
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+        for (Entity nearby : villager.getNearbyEntities(4.0, 4.0, 4.0)) {
+            String owner = nearby.getPersistentDataContainer().get(FishKeys.DEMO_FISH,
+                    PersistentDataType.STRING);
+            if (villager.getUniqueId().toString().equals(owner)) {
+                return nearby;
+            }
+        }
+        return null;
+    }
+
+    private static org.bukkit.util.Vector rightOffset(Location location) {
+        double yaw = Math.toRadians(location.getYaw());
+        return new org.bukkit.util.Vector(Math.cos(yaw), 0, Math.sin(yaw));
     }
 
     public static Settings nextSpecies(Settings settings, int direction) {

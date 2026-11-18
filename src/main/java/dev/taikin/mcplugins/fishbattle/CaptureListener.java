@@ -77,7 +77,11 @@ public final class CaptureListener implements Listener {
             event.setCancelled(true);
             if (DemoVillager.inRemovalMode(event.getPlayer().getUniqueId())
                     && event.getPlayer().hasPermission("uobattle.admin")) {
-                entity.remove();
+                if (entity instanceof org.bukkit.entity.Villager villager) {
+                    DemoVillager.remove(villager, motion);
+                } else {
+                    entity.remove();
+                }
                 event.getPlayer().sendMessage(Component.text("デモ村人を消しました（削除モード継続中）。",
                         NamedTextColor.GRAY));
             }

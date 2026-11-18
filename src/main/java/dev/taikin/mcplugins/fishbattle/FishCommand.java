@@ -219,9 +219,11 @@ public final class FishCommand {
         var villager = player.getWorld().spawn(spawnAt, org.bukkit.entity.Villager.class,
                 org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.CUSTOM);
         villager.setRotation(spawnAt.getYaw(), 0f);
-        DemoVillager.mark(villager, new DemoVillager.Settings("cod", 5, FishType.BLUE,
-                        Rank.COPPER, Rank.COPPER, Rank.COPPER));
+        DemoVillager.Settings settings = new DemoVillager.Settings("cod", 5, FishType.BLUE,
+                Rank.COPPER, Rank.COPPER, Rank.COPPER);
+        DemoVillager.mark(villager, settings);
         villager.setPersistent(true);
+        DemoVillager.attachFish(villager, settings, motion);
         player.sendMessage(Component.text(PREFIX + "デモの村人を置きました。右クリックで設定できます。",
                 NamedTextColor.GREEN));
         return 1;
