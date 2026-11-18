@@ -324,13 +324,13 @@ public final class BattleSession {
     }
 
     static double gainFactor(int technique) {
-        double value = 0.18 + technique / 250.0;
-        return Math.max(0.18, Math.min(0.55, value));
+        double value = technique / 320.0;
+        return Math.max(0.06, Math.min(0.40, value));
     }
 
     private static double gain(double current, int technique) {
         double remaining = Math.max(0.0, 1.0 - current);
-        double next = current + gainFactor(technique) * remaining * remaining;
+        double next = current + gainFactor(technique) * remaining;
         return Math.min(1.0, next);
     }
 
