@@ -165,7 +165,7 @@ public final class DemoVillagerMenu implements Listener {
                     DemoVillager.cycleTechRank(settings, direction));
             case SLOT_START -> {
                 player.closeInventory();
-                battles.startDemo(player, settings);
+                battles.startDemo(player, settings, villager.getLocation());
                 return;
             }
             default -> {

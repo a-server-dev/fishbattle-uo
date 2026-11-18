@@ -237,10 +237,14 @@ public final class BattleManager {
     }
 
     public void startDemo(Player player) {
-        startDemo(player, null);
+        startDemo(player, null, null);
     }
 
     public void startDemo(Player player, DemoVillager.Settings settings) {
+        startDemo(player, settings, null);
+    }
+
+    public void startDemo(Player player, DemoVillager.Settings settings, Location anchor) {
         if (inBattle(player.getUniqueId())) {
             player.sendMessage(Component.text("すでにバトル中です。", NamedTextColor.RED));
             return;
@@ -280,22 +284,33 @@ public final class BattleManager {
         session.setDemo(true);
         session.setPet(player.getUniqueId(), pet.getUniqueId());
 
-        var location = player.getLocation();
-        var direction = location.getDirection().setY(0);
-        if (direction.lengthSquared() < 0.001) {
-            direction = new Vector(0, 0, 1);
+        Location center;
+        Vector direction;
+        if (anchor != null) {
+            direction = anchor.getDirection().setY(0);
+            if (direction.lengthSquared() < 0.001) {
+                direction = new Vector(0, 0, 1);
+            }
+            direction.normalize();
+            center = anchor.clone().add(direction.clone().multiply(2.0));
+        } else {
+            center = player.getLocation();
+            direction = center.getDirection().setY(0);
+            if (direction.lengthSquared() < 0.001) {
+                direction = new Vector(0, 0, 1);
+            }
+            direction.normalize();
         }
-        direction.normalize();
-        var base = location.clone().add(0, 1.1, 0);
+        var base = center.clone().add(0, 1.1, 0);
 
         pets.freeze(session, player.getUniqueId(), pet);
-        pets.place(pet, base.clone().add(direction.clone().multiply(2.0)), direction);
+        pets.place(pet, base.clone().add(direction.clone().multiply(1.2)), direction);
         var npcFishEntity = CaptureListener.spawnFor(npcFish, base.clone()
-                .add(direction.clone().multiply(3.0)));
+                .add(direction.clone().multiply(-1.2)));
         if (npcFishEntity != null) {
-            npcFishEntity.setRotation(location.getYaw() + 180f, 0f);
+            npcFishEntity.setRotation(center.getYaw() + 180f, 0f);
         }
-        var spawnAt = base.clone().add(direction.clone().multiply(5.0)).add(0, -1.0, 0);
+        var spawnAt = base.clone().add(direction.clone().multiply(-2.0)).add(0, -1.0, 0);
         if (npcFishEntity != null) {
             CaptureListener.applyData(npcFishEntity, npcFish);
             npcFishEntity.getPersistentDataContainer().set(FishKeys.OWNER,
@@ -308,7 +323,7 @@ public final class BattleManager {
         }
         pets.showBattleNames(session);
 
-        session.setCenter(midpoint(pet.getLocation(),
+        session.setCenter(anchor != null ? center : midpoint(pet.getLocation(),
                 npcFishEntity != null ? npcFishEntity.getLocation() : player.getLocation()));
         sessions.put(player.getUniqueId(), session);
         sessions.put(npcId, session);
