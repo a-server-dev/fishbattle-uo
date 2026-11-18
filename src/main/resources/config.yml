@@ -36,9 +36,9 @@ species:
     technique: 50
   sunstreak:
     name: "スジモヨウ"
-    hp: 45
+    hp: 50
     power: 50
-    technique: 65
+    technique: 60
   snooper:
     name: "ハナビレ"
     hp: 50
@@ -46,9 +46,9 @@ species:
     technique: 60
   dasher:
     name: "セイブン"
-    hp: 40
+    hp: 45
     power: 55
-    technique: 65
+    technique: 60
   brinely:
     name: "ブリナ"
     hp: 60

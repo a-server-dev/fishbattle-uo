@@ -22,9 +22,9 @@ public record FishSpecies(String key, String name, int hp, int power, int techni
         register("tadpole", "オタマジャクシ", 35, 40, 70);
 
         pattern(TropicalFish.Pattern.KOB, "コブダイ", 55, 55, 50);
-        pattern(TropicalFish.Pattern.SUNSTREAK, "スジモヨウ", 45, 50, 65);
+        pattern(TropicalFish.Pattern.SUNSTREAK, "スジモヨウ", 50, 50, 60);
         pattern(TropicalFish.Pattern.SNOOPER, "ハナビレ", 50, 50, 60);
-        pattern(TropicalFish.Pattern.DASHER, "セイブン", 40, 55, 65);
+        pattern(TropicalFish.Pattern.DASHER, "セイブン", 45, 55, 60);
         pattern(TropicalFish.Pattern.BRINELY, "ブリナ", 60, 50, 50);
         pattern(TropicalFish.Pattern.SPOTTY, "スポッティ", 50, 55, 55);
         pattern(TropicalFish.Pattern.FLOPPER, "フロッパー", 65, 45, 50);
