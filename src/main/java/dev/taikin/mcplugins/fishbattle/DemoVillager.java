@@ -110,7 +110,7 @@ public final class DemoVillager {
             old.remove();
         }
         Location base = villager.getLocation();
-        Location spawnAt = base.clone().add(rightOffset(base).multiply(1.4));
+        Location spawnAt = base.clone().add(rightOffset(base).multiply(1.4)).add(0, 1.35, 0);
         Entity fish = CaptureListener.spawnFor(settings.toFish(), spawnAt);
         if (fish == null) {
             return;
