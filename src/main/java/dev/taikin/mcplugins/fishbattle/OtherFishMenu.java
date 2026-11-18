@@ -23,9 +23,14 @@ import org.bukkit.persistence.PersistentDataType;
 public final class OtherFishMenu implements Listener {
 
     private static final int SLOT_INFO = 4;
-    private static final int SLOT_STATS = 20;
-    private static final int SLOT_TECH = 22;
-    private static final int SLOT_CHALLENGE = 24;
+    private static final int SLOT_HP_LABEL = 9;
+    private static final int SLOT_HP_BAR = 10;
+    private static final int SLOT_POWER_LABEL = 11;
+    private static final int SLOT_POWER_BAR = 12;
+    private static final int SLOT_TECH_LABEL = 14;
+    private static final int SLOT_TECH_BAR = 15;
+    private static final int SLOT_MOVES = 18;
+    private static final int SLOT_CHALLENGE = 22;
     private static final double DEFAULT_STAKE = 100.0;
 
     private final org.bukkit.plugin.Plugin plugin;
@@ -58,14 +63,12 @@ public final class OtherFishMenu implements Listener {
                         line("属性: " + fish.type().label(), fish.type().color()),
                         line("Lv" + fish.level(), NamedTextColor.AQUA))));
 
-        inventory.setItem(SLOT_STATS, item(fish.hpRank().icon(),
-                Component.text("ステータス", NamedTextColor.RED),
-                List.of(line("体力 " + fish.maxHp() + "  " + fish.hpRank().display(),
-                                fish.hpRank().color()),
-                        line("強さ " + fish.power() + "  " + fish.powerRank().display(),
-                                fish.powerRank().color()),
-                        line("テクニック " + fish.technique() + "  " + fish.techRank().display(),
-                                fish.techRank().color()))));
+        statRow(inventory, SLOT_HP_LABEL, SLOT_HP_BAR, fish.hpRank(), "体力", fish.maxHp(),
+                PetMenu.maxHp(), NamedTextColor.GREEN);
+        statRow(inventory, SLOT_POWER_LABEL, SLOT_POWER_BAR, fish.powerRank(), "強さ", fish.power(),
+                PetMenu.maxPower(), NamedTextColor.RED);
+        statRow(inventory, SLOT_TECH_LABEL, SLOT_TECH_BAR, fish.techRank(), "テクニック",
+                fish.technique(), PetMenu.maxTech(), NamedTextColor.AQUA);
 
         List<Component> moves = new ArrayList<>();
         if (fish.moves().isEmpty()) {
@@ -77,12 +80,28 @@ public final class OtherFishMenu implements Listener {
                         entry.getValue().color()));
             }
         }
-        inventory.setItem(SLOT_TECH, item(Material.PAPER,
+        inventory.setItem(SLOT_MOVES, item(Material.PAPER,
                 Component.text("技", NamedTextColor.AQUA), moves));
 
         inventory.setItem(SLOT_CHALLENGE, item(Material.DIAMOND_SWORD,
                 Component.text("対戦を申し込む", NamedTextColor.GOLD),
                 List.of(line("賭け金 " + (int) DEFAULT_STAKE, NamedTextColor.GRAY))));
+    }
+
+    private static void statRow(Inventory inventory, int labelSlot, int barSlot, Rank rank,
+            String name, int value, int max, NamedTextColor color) {
+        int clamped = Math.max(0, Math.min(value, max));
+        ItemStack label = new ItemStack(rank.icon());
+        label.editMeta(meta -> {
+            meta.customName(Component.text(rank.display() + " " + name + ": " + value, rank.color())
+                    .decoration(TextDecoration.ITALIC, false));
+            meta.lore(List.of(line("最大 " + max + " 中の " + clamped, NamedTextColor.DARK_GRAY)));
+        });
+        inventory.setItem(labelSlot, label);
+        int filled = max <= 0 ? 0 : (int) Math.round(PetMenu.STAT_BARS * (double) clamped / max);
+        for (int i = 0; i < PetMenu.STAT_BARS; i++) {
+            inventory.setItem(barSlot + i, PetMenu.barPiece(i < filled, color, name, value, max));
+        }
     }
 
     private static Material infoIcon(Fish fish) {

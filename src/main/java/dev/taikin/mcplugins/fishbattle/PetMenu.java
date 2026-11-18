@@ -44,26 +44,26 @@ public final class PetMenu {
     private static final int SLOT_EXP_LABEL = 27;
     private static final int SLOT_EXP_BAR = 28;
     private static final int SLOT_BACK = 40;
-    private static final int STAT_BARS = 7;
+    static final int STAT_BARS = 7;
     private static final int EXP_BARS = 7;
     private static final int[] HAND_ICON = {0, 9, 18};
     private static final int[] SLOT_TECH = {1, 10, 19};
 
     private static final double RANK_TOP = Rank.DIAMOND.multiplier();
 
-    private static int maxPower() {
+    static int maxPower() {
         return (int) Math.ceil(RANK_TOP * (FishSpecies.allKeys().stream()
                 .mapToInt(key -> FishSpecies.byKey(key).power()).max().orElse(100)
                 + Fish.MAX_LEVEL * Fish.POWER_PER_LEVEL));
     }
 
-    private static int maxHp() {
+    static int maxHp() {
         return (int) Math.ceil(RANK_TOP * (FishSpecies.allKeys().stream()
                 .mapToInt(key -> FishSpecies.byKey(key).hp()).max().orElse(100)
                 + (Fish.MAX_LEVEL - 1) * Fish.HP_PER_LEVEL));
     }
 
-    private static int maxTech() {
+    static int maxTech() {
         return (int) Math.ceil(RANK_TOP * (FishSpecies.allKeys().stream()
                 .mapToInt(key -> FishSpecies.byKey(key).technique()).max().orElse(100)
                 + Fish.MAX_LEVEL * Fish.TECH_PER_LEVEL));
@@ -332,7 +332,7 @@ public final class PetMenu {
         }
     }
 
-    private ItemStack barPiece(boolean filled, NamedTextColor color, String name, int value, int max) {
+    static ItemStack barPiece(boolean filled, NamedTextColor color, String name, int value, int max) {
         Material material = filled ? glassFor(color) : Material.LIGHT_GRAY_STAINED_GLASS_PANE;
         ItemStack item = new ItemStack(material);
         item.editMeta(meta -> {
@@ -343,7 +343,7 @@ public final class PetMenu {
         return item;
     }
 
-    private static Material glassFor(NamedTextColor color) {
+    static Material glassFor(NamedTextColor color) {
         if (color == NamedTextColor.RED) {
             return Material.RED_STAINED_GLASS_PANE;
         }
