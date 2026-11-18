@@ -37,33 +37,33 @@ species:
   sunstreak:
     name: "スジモヨウ"
     hp: 50
-    power: 50
-    technique: 60
+    power: 55
+    technique: 55
   snooper:
     name: "ハナビレ"
     hp: 50
-    power: 50
-    technique: 60
+    power: 45
+    technique: 65
   dasher:
     name: "セイブン"
-    hp: 45
+    hp: 40
     power: 55
-    technique: 60
+    technique: 65
   brinely:
     name: "ブリナ"
-    hp: 60
-    power: 50
-    technique: 50
-  spotty:
-    name: "スポッティ"
-    hp: 50
-    power: 55
-    technique: 55
-  flopper:
-    name: "フロッパー"
     hp: 65
     power: 45
     technique: 50
+  spotty:
+    name: "スポッティ"
+    hp: 55
+    power: 50
+    technique: 55
+  flopper:
+    name: "フロッパー"
+    hp: 70
+    power: 45
+    technique: 45
   stripey:
     name: "シマシマ"
     hp: 45
@@ -76,18 +76,18 @@ species:
     technique: 60
   blockfish:
     name: "ブロック"
-    hp: 70
-    power: 60
+    hp: 75
+    power: 55
     technique: 30
   betty:
     name: "ベティ"
-    hp: 50
-    power: 65
+    hp: 55
+    power: 60
     technique: 45
   clayfish:
     name: "クレイ"
-    hp: 60
-    power: 60
+    hp: 65
+    power: 55
     technique: 40
   lucy:
     name: "ルーシー"
