@@ -73,6 +73,14 @@ public final class CaptureListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPreAttack(io.papermc.paper.event.player.PrePlayerAttackEntityEvent event) {
         Entity entity = event.getAttacked();
+        if (DemoVillager.isDemoVillager(entity)) {
+            event.setCancelled(true);
+            if (event.getPlayer().hasPermission("uobattle.admin")) {
+                entity.remove();
+                event.getPlayer().sendMessage(Component.text("デモ村人を消しました。", NamedTextColor.GRAY));
+            }
+            return;
+        }
         if (!FishMotion.hasData(entity)) {
             return;
         }

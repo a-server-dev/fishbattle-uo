@@ -48,6 +48,15 @@ public final class BattleListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onHit(EntityDamageByEntityEvent event) {
         if (event.getDamager() instanceof org.bukkit.entity.Player player) {
+            if (DemoVillager.isDemoVillager(event.getEntity())) {
+                event.setCancelled(true);
+                if (player.hasPermission("uobattle.admin")) {
+                    event.getEntity().remove();
+                    player.sendMessage(net.kyori.adventure.text.Component.text(
+                            "デモ村人を消しました。", net.kyori.adventure.text.format.NamedTextColor.GRAY));
+                }
+                return;
+            }
             battles.mash(player);
         }
     }
