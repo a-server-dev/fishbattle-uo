@@ -5,10 +5,10 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Material;
 
 public enum Rank {
-    DIAMOND("ダイヤ", "S", 1.15, NamedTextColor.AQUA, Material.DIAMOND),
-    GOLD("金", "A", 1.08, NamedTextColor.GOLD, Material.GOLD_INGOT),
+    DIAMOND("ダイヤ", "S", 1.10, NamedTextColor.AQUA, Material.DIAMOND),
+    GOLD("金", "A", 1.05, NamedTextColor.GOLD, Material.GOLD_INGOT),
     COPPER("銅", "B", 1.00, NamedTextColor.YELLOW, Material.COPPER_INGOT),
-    IRON("鉄", "C", 0.93, NamedTextColor.GRAY, Material.IRON_INGOT);
+    IRON("鉄", "C", 0.95, NamedTextColor.GRAY, Material.IRON_INGOT);
 
     private final String label;
     private final String grade;

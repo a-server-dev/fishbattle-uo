@@ -84,11 +84,11 @@ public record Fish(String id, FishType type, String speciesKey, int level, int e
     }
 
     public int power() {
-        return scaled(species().power() + level, powerRank);
+        return scaled(species().power() + level * POWER_PER_LEVEL, powerRank);
     }
 
     public int technique() {
-        return scaled(species().technique() + level / 2, techRank);
+        return scaled(species().technique() + level * TECH_PER_LEVEL, techRank);
     }
 
     private static int scaled(int value, Rank rank) {
@@ -122,11 +122,15 @@ public record Fish(String id, FishType type, String speciesKey, int level, int e
                 this.techniques, this.powerRank, this.hpRank, this.techRank);
     }
 
+    public static final int POWER_PER_LEVEL = 2;
+    public static final int HP_PER_LEVEL = 4;
+    public static final int TECH_PER_LEVEL = 1;
+
     public static int maxHp(FishSpecies species, int level) {
-        return species.hp() + (level - 1) * 2;
+        return species.hp() + (level - 1) * HP_PER_LEVEL;
     }
 
     public static int maxHp(FishSpecies species, int level, Rank hpRank) {
-        return scaled(species.hp() + (level - 1) * 2, hpRank);
+        return scaled(species.hp() + (level - 1) * HP_PER_LEVEL, hpRank);
     }
 }
