@@ -67,7 +67,11 @@ public final class FishBattlePlugin extends JavaPlugin {
 
     private void loadSpeciesConfig() {
         saveDefaultConfig();
-        FishSpecies.setAverageTotal(getConfig().getInt("average-total", 155));
+        FishSpecies.setExpSettings(
+                getConfig().getInt("exp.reference-total", 150),
+                getConfig().getDouble("exp.base-multiplier", 0.5),
+                getConfig().getDouble("exp.per-point", 0.08),
+                getConfig().getDouble("exp.min-multiplier", 0.45));
         FishSpecies.loadConfig(getConfig().getConfigurationSection("species"));
         getLogger().info("Loaded species stats from config.yml.");
     }

@@ -1,6 +1,12 @@
 # 魚の種族値（hp=体力, power=強さ, technique=テクニック）
-# 3値の合計が大きいほど必要EXPが増えます（平均は average-total）。
-average-total: 155
+# 3値の合計が大きいほど必要EXPが増えます。
+exp:
+  # 合計値が reference-total のとき倍率 base-multiplier。
+  # 1ポイント増えるごとに per-point を加算（下限 min-multiplier）。
+  reference-total: 150
+  base-multiplier: 0.5
+  per-point: 0.08
+  min-multiplier: 0.45
 
 species:
   cod:

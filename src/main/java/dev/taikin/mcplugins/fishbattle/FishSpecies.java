@@ -10,7 +10,10 @@ public record FishSpecies(String key, String name, int hp, int power, int techni
 
     private static final Map<String, FishSpecies> DEFAULTS = new LinkedHashMap<>();
     private static final Map<String, FishSpecies> REGISTRY = new LinkedHashMap<>();
-    private static int averageTotal = 155;
+    private static int referenceTotal = 150;
+    private static double baseExpMultiplier = 0.5;
+    private static double expPerPoint = 0.08;
+    private static double minExpMultiplier = 0.45;
 
     static {
         register("cod", "タラ", 60, 45, 45);
@@ -67,8 +70,11 @@ public record FishSpecies(String key, String name, int hp, int power, int techni
         }
     }
 
-    public static void setAverageTotal(int value) {
-        averageTotal = Math.max(1, value);
+    public static void setExpSettings(int reference, double base, double perPoint, double min) {
+        referenceTotal = reference;
+        baseExpMultiplier = Math.max(0.01, base);
+        expPerPoint = perPoint;
+        minExpMultiplier = Math.max(0.01, min);
     }
 
     private static void axolotl(Axolotl.Variant variant, String name, int hp, int power, int technique) {
@@ -80,7 +86,8 @@ public record FishSpecies(String key, String name, int hp, int power, int techni
     }
 
     public double expMultiplier() {
-        return 1.0 + (total() - averageTotal) / (double) averageTotal;
+        return Math.max(minExpMultiplier,
+                baseExpMultiplier + expPerPoint * (total() - referenceTotal));
     }
 
     public static java.util.List<String> allKeys() {
