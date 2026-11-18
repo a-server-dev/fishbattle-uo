@@ -42,13 +42,13 @@ species:
   snooper:
     name: "ハナビレ"
     hp: 50
-    power: 45
-    technique: 65
+    power: 50
+    technique: 60
   dasher:
     name: "セイブン"
     hp: 40
-    power: 55
-    technique: 65
+    power: 60
+    technique: 60
   brinely:
     name: "ブリナ"
     hp: 65
@@ -56,19 +56,19 @@ species:
     technique: 50
   spotty:
     name: "スポッティ"
-    hp: 55
+    hp: 60
     power: 50
-    technique: 55
+    technique: 50
   flopper:
     name: "フロッパー"
     hp: 70
-    power: 45
-    technique: 45
+    power: 50
+    technique: 40
   stripey:
     name: "シマシマ"
     hp: 45
-    power: 55
-    technique: 60
+    power: 60
+    technique: 55
   glitter:
     name: "キラキラ"
     hp: 50
@@ -82,8 +82,8 @@ species:
   betty:
     name: "ベティ"
     hp: 55
-    power: 60
-    technique: 45
+    power: 65
+    technique: 40
   clayfish:
     name: "クレイ"
     hp: 65
