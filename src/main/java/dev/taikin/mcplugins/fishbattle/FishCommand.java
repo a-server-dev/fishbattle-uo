@@ -224,7 +224,8 @@ public final class FishCommand {
         var spawnAt = location.clone().add(direction.multiply(2.5));
         var villager = player.getWorld().spawn(spawnAt, org.bukkit.entity.Villager.class,
                 org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason.CUSTOM);
-        DemoVillager.mark(villager, new DemoVillager.Settings("cod", 5, FishType.BLUE, Rank.COPPER));
+        DemoVillager.mark(villager, new DemoVillager.Settings("cod", 5, FishType.BLUE,
+                        Rank.COPPER, Rank.COPPER, Rank.COPPER));
         villager.setPersistent(true);
         player.sendMessage(Component.text(PREFIX + "デモの村人を置きました。右クリックで設定できます。",
                 NamedTextColor.GREEN));

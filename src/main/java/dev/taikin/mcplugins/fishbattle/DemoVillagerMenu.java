@@ -20,12 +20,12 @@ import org.bukkit.plugin.Plugin;
 
 public final class DemoVillagerMenu implements Listener {
 
-    private static final int SLOT_SPECIES = 11;
-    private static final int SLOT_LEVEL_DOWN = 12;
-    private static final int SLOT_LEVEL = 13;
-    private static final int SLOT_LEVEL_UP = 14;
-    private static final int SLOT_TYPE = 15;
-    private static final int SLOT_RANK = 16;
+    private static final int SLOT_SPECIES = 10;
+    private static final int SLOT_LEVEL = 11;
+    private static final int SLOT_TYPE = 12;
+    private static final int SLOT_RANK_POWER = 14;
+    private static final int SLOT_RANK_HP = 15;
+    private static final int SLOT_RANK_TECH = 16;
     private static final int SLOT_INFO = 4;
     private static final int SLOT_START = 22;
 
@@ -60,7 +60,9 @@ public final class DemoVillagerMenu implements Listener {
                 Component.text("相手: " + species.name(), NamedTextColor.GOLD),
                 List.of(line("レベル " + settings.level(), NamedTextColor.WHITE),
                         line("属性 " + settings.type().label(), settings.type().color()),
-                        line("個体値 " + settings.rank().display(), settings.rank().color()),
+                        line("個体値 強" + settings.powerRank().display()
+                                + " 体" + settings.hpRank().display()
+                                + " テク" + settings.techRank().display(), NamedTextColor.GOLD),
                         line("HP " + preview.maxHp() + " / 強さ " + preview.power()
                                 + " / テク " + preview.technique(), NamedTextColor.GRAY))));
 
@@ -68,20 +70,26 @@ public final class DemoVillagerMenu implements Listener {
                 Component.text("魚を変える: " + species.name(), NamedTextColor.AQUA),
                 List.of(line("左クリックで次、右クリックで前", NamedTextColor.GRAY))));
 
-        inventory.setItem(SLOT_LEVEL_DOWN, item(Material.RED_DYE,
-                Component.text("レベル -1", NamedTextColor.RED), List.of()));
         inventory.setItem(SLOT_LEVEL, item(Material.EXPERIENCE_BOTTLE,
                 Component.text("レベル " + settings.level(), NamedTextColor.AQUA),
-                List.of(line("最大 " + Fish.MAX_LEVEL, NamedTextColor.GRAY))));
-        inventory.setItem(SLOT_LEVEL_UP, item(Material.LIME_DYE,
-                Component.text("レベル +1", NamedTextColor.GREEN), List.of()));
+                List.of(line("左クリックで +1、右クリックで -1", NamedTextColor.GRAY),
+                        line("最大 " + Fish.MAX_LEVEL, NamedTextColor.DARK_GRAY))));
 
         inventory.setItem(SLOT_TYPE, item(settings.type().hand().icon(),
                 Component.text("属性: " + settings.type().label(), settings.type().color()),
                 List.of(line("左クリックで次、右クリックで前", NamedTextColor.GRAY))));
 
-        inventory.setItem(SLOT_RANK, item(settings.rank().icon(),
-                Component.text("個体値: " + settings.rank().display(), settings.rank().color()),
+        inventory.setItem(SLOT_RANK_POWER, item(settings.powerRank().icon(),
+                Component.text("強さの個体値: " + settings.powerRank().display(),
+                        settings.powerRank().color()),
+                List.of(line("左クリックで次、右クリックで前", NamedTextColor.GRAY))));
+        inventory.setItem(SLOT_RANK_HP, item(settings.hpRank().icon(),
+                Component.text("体力の個体値: " + settings.hpRank().display(),
+                        settings.hpRank().color()),
+                List.of(line("左クリックで次、右クリックで前", NamedTextColor.GRAY))));
+        inventory.setItem(SLOT_RANK_TECH, item(settings.techRank().icon(),
+                Component.text("テクの個体値: " + settings.techRank().display(),
+                        settings.techRank().color()),
                 List.of(line("左クリックで次、右クリックで前", NamedTextColor.GRAY))));
 
         inventory.setItem(SLOT_START, item(Material.DIAMOND_SWORD,
@@ -145,14 +153,16 @@ public final class DemoVillagerMenu implements Listener {
         switch (event.getRawSlot()) {
             case SLOT_SPECIES -> DemoVillager.write(villager,
                     DemoVillager.nextSpecies(settings, direction));
-            case SLOT_LEVEL_DOWN -> DemoVillager.write(villager,
-                    DemoVillager.shiftLevel(settings, -1));
-            case SLOT_LEVEL_UP -> DemoVillager.write(villager,
-                    DemoVillager.shiftLevel(settings, 1));
+            case SLOT_LEVEL -> DemoVillager.write(villager,
+                    DemoVillager.shiftLevel(settings, direction));
             case SLOT_TYPE -> DemoVillager.write(villager,
                     DemoVillager.cycleType(settings, direction));
-            case SLOT_RANK -> DemoVillager.write(villager,
-                    DemoVillager.cycleRank(settings, direction));
+            case SLOT_RANK_POWER -> DemoVillager.write(villager,
+                    DemoVillager.cyclePowerRank(settings, direction));
+            case SLOT_RANK_HP -> DemoVillager.write(villager,
+                    DemoVillager.cycleHpRank(settings, direction));
+            case SLOT_RANK_TECH -> DemoVillager.write(villager,
+                    DemoVillager.cycleTechRank(settings, direction));
             case SLOT_START -> {
                 player.closeInventory();
                 battles.startDemo(player, settings);
