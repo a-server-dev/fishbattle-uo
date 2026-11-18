@@ -1,3 +1,7 @@
+# 戦闘設定。damage-scale を下げるほど長期戦になる（1.0 = 係数そのまま）。
+combat:
+  damage-scale: 0.6
+
 # 魚の種族値（hp=体力, power=強さ, technique=テクニック）
 # 3値の合計が大きいほど必要EXPが増えます。
 exp:

@@ -69,6 +69,7 @@ public final class FishBattlePlugin extends JavaPlugin {
 
     private void loadSpeciesConfig() {
         saveDefaultConfig();
+        DamageCalc.setScale(getConfig().getDouble("combat.damage-scale", 0.6));
         FishSpecies.setExpSettings(
                 getConfig().getInt("exp.reference-total", 150),
                 getConfig().getDouble("exp.base-multiplier", 0.5),

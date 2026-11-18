@@ -122,6 +122,8 @@
 `plugins/uo/config.yml` で種族値を変更できます。
 
 ```yaml
+combat:
+  damage-scale: 0.6   # 小さいほど長期戦（1.0で係数そのまま）
 exp:
   reference-total: 150
   base-multiplier: 0.5
@@ -135,6 +137,7 @@ species:
     technique: 45
 ```
 
+- `combat.damage-scale` はダメージ全体の倍率。0.6で平均3〜4ラウンド程度
 - 3値の合計が大きいほど必要EXPが増えます（`exp` の設定が基準）
 - 変更後は `/uo reload`（管理者）またはサーバー再起動で反映
 - 記載のない種族は同梱の初期値が使われます
