@@ -194,6 +194,10 @@ public final class CaptureListener implements Listener {
             String ownerId = entity.getPersistentDataContainer().get(FishKeys.OWNER, PersistentDataType.STRING);
             if (ownerId == null || ownerId.equals(player.getUniqueId().toString())) {
                 event.setCancelled(true);
+                if (battles != null && battles.inBattle(player.getUniqueId())) {
+                    player.sendActionBar(Component.text("バトル中は装備できません。", NamedTextColor.GRAY));
+                    return;
+                }
                 if (menu.equipTechnique(player, entity, card)) {
                     if (item.getAmount() > 1) {
                         item.setAmount(item.getAmount() - 1);

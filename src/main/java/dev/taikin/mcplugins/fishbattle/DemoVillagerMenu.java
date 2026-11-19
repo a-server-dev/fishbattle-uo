@@ -200,7 +200,7 @@ public final class DemoVillagerMenu implements Listener {
         }
     }
 
-    private static boolean owns(Inventory inventory) {
+    static boolean owns(Inventory inventory) {
         return inventory.getHolder() instanceof Holder;
     }
 

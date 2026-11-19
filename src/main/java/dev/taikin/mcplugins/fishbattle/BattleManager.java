@@ -214,6 +214,7 @@ public final class BattleManager {
         session.setStake(stake);
         sessions.put(from.getUniqueId(), session);
         sessions.put(to.getUniqueId(), session);
+        closeUoMenus(session);
 
         pets.freeze(session, from.getUniqueId(), petA);
         pets.freeze(session, to.getUniqueId(), petB);
@@ -363,6 +364,22 @@ public final class BattleManager {
         }
     }
 
+    private void closeUoMenus(Player player) {
+        if (player == null) {
+            return;
+        }
+        var top = player.getOpenInventory().getTopInventory();
+        if (PetMenu.owns(top) || OtherFishMenu.owns(top) || DemoVillagerMenu.owns(top)) {
+            player.closeInventory();
+        }
+    }
+
+    private void closeUoMenus(BattleSession session) {
+        for (UUID id : new UUID[] {session.playerA(), session.playerB()}) {
+            closeUoMenus(Bukkit.getPlayer(id));
+        }
+    }
+
     private void beginRound(BattleSession session, int round) {
         if (session.closed()
                 || (session.phase() != BattleSession.Phase.IDLE
@@ -370,6 +387,7 @@ public final class BattleManager {
             return;
         }
         session.setRound(round);
+        closeUoMenus(session);
         session.clearChoices();
         session.resetMash();
         session.setAttacker(null);

@@ -570,6 +570,10 @@ public final class PetMenu {
         return inventory.getHolder() instanceof Holder;
     }
 
+    static boolean owns(Inventory inventory) {
+        return inventory.getHolder() instanceof Holder;
+    }
+
     private void untrain(Player player, Entity entity, Rps hand) {
         Fish fish = FishData.read(entity);
         if (fish == null) {

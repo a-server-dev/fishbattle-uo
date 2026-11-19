@@ -182,7 +182,7 @@ public final class OtherFishMenu implements Listener {
         }
     }
 
-    private static boolean owns(Inventory inventory) {
+    static boolean owns(Inventory inventory) {
         return inventory.getHolder() instanceof Holder;
     }
 
