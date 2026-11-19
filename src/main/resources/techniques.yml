@@ -2,7 +2,7 @@
 # hand: GU / CHOKI / PA   power: 威力倍率   mash-seconds: 連打時間の延長（秒）
 # rarity: COMMON / UNCOMMON / RARE / EPIC / LEGENDARY
 # charge-start: 開始気合   charge-gain: 気合の伸び倍率   drain: 相手の気合を奪う割合
-# pierce: 相手気合防御の貫通率   heal: 与ダメージの回復率   ignore-type: 属性不利を無効化
+# heal: 与ダメージの回復率   ignore-type: 属性不利を無効化
 # tie-power: あいこ押し込み倍率   flat-damage: 固定追加ダメージ
 techniques:
   tackle:
@@ -21,7 +21,6 @@ techniques:
     charge-start: 0.15
     charge-gain: 1.00
     drain: 0.00
-    pierce: 0.00
     heal: 0.00
     ignore-type: false
     tie-power: 1.00
@@ -36,7 +35,6 @@ techniques:
     charge-start: 0.00
     charge-gain: 1.00
     drain: 0.00
-    pierce: 0.00
     heal: 0.00
     ignore-type: true
     tie-power: 1.00
@@ -51,12 +49,11 @@ techniques:
     charge-start: 0.00
     charge-gain: 1.00
     drain: 0.00
-    pierce: 0.50
     heal: 0.00
     ignore-type: false
     tie-power: 1.00
-    flat-damage: 0
-    description: "相手の気合防御を50%貫通"
+    flat-damage: 4
+    description: "落雷で固定+4ダメージ"
   blaze:
     name: "ごうかブレイズ"
     hand: GU
@@ -66,7 +63,6 @@ techniques:
     charge-start: 0.00
     charge-gain: 1.00
     drain: 0.15
-    pierce: 0.00
     heal: 0.00
     ignore-type: false
     tie-power: 1.00
@@ -81,12 +77,11 @@ techniques:
     charge-start: 0.00
     charge-gain: 1.00
     drain: 0.00
-    pierce: 0.35
     heal: 0.00
     ignore-type: false
     tie-power: 1.00
-    flat-damage: 5
-    description: "防御貫通35%と固定+5ダメージ"
+    flat-damage: 8
+    description: "固定+8ダメージの大技"
   bite:
     name: "かみつき"
     hand: CHOKI
@@ -96,7 +91,6 @@ techniques:
     charge-start: 0.00
     charge-gain: 1.00
     drain: 0.00
-    pierce: 0.00
     heal: 0.20
     ignore-type: false
     tie-power: 1.00
@@ -111,7 +105,6 @@ techniques:
     charge-start: 0.00
     charge-gain: 1.00
     drain: 0.08
-    pierce: 0.00
     heal: 0.00
     ignore-type: false
     tie-power: 1.00
@@ -126,7 +119,6 @@ techniques:
     charge-start: 0.00
     charge-gain: 1.50
     drain: 0.00
-    pierce: 0.00
     heal: 0.00
     ignore-type: false
     tie-power: 1.00
@@ -141,7 +133,6 @@ techniques:
     charge-start: 0.00
     charge-gain: 1.00
     drain: 0.18
-    pierce: 0.00
     heal: 0.00
     ignore-type: false
     tie-power: 1.00
@@ -156,7 +147,6 @@ techniques:
     charge-start: 0.00
     charge-gain: 1.00
     drain: 0.00
-    pierce: 0.00
     heal: 0.15
     ignore-type: false
     tie-power: 1.00
@@ -171,7 +161,6 @@ techniques:
     charge-start: 0.00
     charge-gain: 1.00
     drain: 0.00
-    pierce: 0.00
     heal: 0.00
     ignore-type: true
     tie-power: 1.00
@@ -186,7 +175,6 @@ techniques:
     charge-start: 0.00
     charge-gain: 1.00
     drain: 0.12
-    pierce: 0.00
     heal: 0.00
     ignore-type: false
     tie-power: 1.00
@@ -201,7 +189,6 @@ techniques:
     charge-start: 0.20
     charge-gain: 1.00
     drain: 0.00
-    pierce: 0.00
     heal: 0.00
     ignore-type: false
     tie-power: 1.00
@@ -216,7 +203,6 @@ techniques:
     charge-start: 0.00
     charge-gain: 1.00
     drain: 0.00
-    pierce: 0.00
     heal: 0.30
     ignore-type: false
     tie-power: 1.00
@@ -231,7 +217,6 @@ techniques:
     charge-start: 0.00
     charge-gain: 1.00
     drain: 0.00
-    pierce: 0.00
     heal: 0.00
     ignore-type: false
     tie-power: 1.60

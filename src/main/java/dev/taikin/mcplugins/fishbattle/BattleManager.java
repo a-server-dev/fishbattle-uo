@@ -646,8 +646,7 @@ public final class BattleManager {
             defender.sendActionBar(Component.text("相手の攻撃…", NamedTextColor.DARK_GRAY));
         }
         scheduleAttack(session, attackerId, defenderId,
-                session.charge(attackerId), session.charge(defenderId),
-                session.clicks(attackerId), 1.0);
+                session.charge(attackerId), session.clicks(attackerId), 1.0);
     }
 
     private void beginChoosing(BattleSession session) {
@@ -848,13 +847,12 @@ public final class BattleManager {
     }
 
     private void scheduleAttack(BattleSession session, UUID attackerId, UUID defenderId,
-            double attackerCharge, double defenderCharge, int attackerClicks, double clashScale) {
+            double attackerCharge, int attackerClicks, double clashScale) {
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (session.closed() || session.phase() != BattleSession.Phase.ATTACKING) {
                 return;
             }
-            resolveAttack(session, attackerId, defenderId, attackerCharge, defenderCharge,
-                    attackerClicks, clashScale);
+            resolveAttack(session, attackerId, defenderId, attackerCharge, attackerClicks, clashScale);
         }, ATTACK_DELAY_TICKS);
     }
 
@@ -880,7 +878,6 @@ public final class BattleManager {
         UUID winnerId = chargeA > chargeB ? idA : idB;
         UUID loserId = session.opponentOf(winnerId);
         double winnerCharge = session.charge(winnerId);
-        double loserCharge = session.charge(loserId);
         int winnerClicks = session.clicks(winnerId);
 
         broadcast(session, Component.text("あいこ！ だが気合の差で "
@@ -892,7 +889,7 @@ public final class BattleManager {
         Technique tieTechnique = techniqueOf(session, winnerId);
         double tieBoost = tieTechnique == null ? 1.0 : tieTechnique.tiePower();
         double scale = Math.max(MIN_TIE_ATTACK_SCALE, Math.min(1.0, gap / 0.15 * tieBoost));
-        scheduleAttack(session, winnerId, loserId, winnerCharge, loserCharge, winnerClicks, scale);
+        scheduleAttack(session, winnerId, loserId, winnerCharge, winnerClicks, scale);
     }
 
     public boolean isMashing(Player player) {
@@ -936,28 +933,19 @@ public final class BattleManager {
     }
 
     private void resolveAttack(BattleSession session, UUID attackerId, UUID defenderId,
-            double attackerCharge, double defenderCharge, int attackerClicks) {
-        resolveAttack(session, attackerId, defenderId, attackerCharge, defenderCharge, attackerClicks, 1.0);
-    }
-
-    private void resolveAttack(BattleSession session, UUID attackerId, UUID defenderId,
-            double attackerCharge, double defenderCharge, int attackerClicks, double clashScale) {
+            double attackerCharge, int attackerClicks, double clashScale) {
         Fish attacker = session.fishOf(attackerId);
         Fish target = session.fishOf(defenderId);
         double multiplier = attacker.type().multiplier(target.type());
 
-        Technique technique = DamageCalc.bestTechnique(attacker, session.choiceOf(attackerId));
+        Technique technique = attacker.techniqueFor(session.choiceOf(attackerId));
         double techniqueBonus = technique != null ? technique.bonus() : 1.0;
-        double effectiveDefense = defenderCharge;
-        if (technique != null && technique.pierce() > 0) {
-            effectiveDefense *= 1.0 - technique.pierce();
-        }
         double typeMultiplier = multiplier;
         if (technique != null && technique.ignoreType() && typeMultiplier < 1.0) {
             typeMultiplier = 1.0;
         }
-        int damage = (int) Math.max(1, Math.round(DamageCalc.damage(attacker, target, attackerCharge,
-                effectiveDefense, typeMultiplier * techniqueBonus) * clashScale));
+        int damage = (int) Math.max(1, Math.round(
+                DamageCalc.damage(attacker, attackerCharge, typeMultiplier * techniqueBonus) * clashScale));
         if (technique != null) {
             damage += technique.flatDamage();
         }
@@ -990,8 +978,8 @@ public final class BattleManager {
         }
         Component hit = Component.text()
                 .append(Component.text(attacker.displayName() + " の攻撃！ ", NamedTextColor.WHITE))
-                .append(Component.text("(気合 " + Math.round(attackerCharge * 100) + "% / 相手 "
-                        + Math.round(defenderCharge * 100) + "%) ", NamedTextColor.DARK_GRAY))
+                .append(Component.text("(気合 " + Math.round(attackerCharge * 100) + "%) ",
+                        NamedTextColor.DARK_GRAY))
                 .append(Component.text(target.displayName() + " に " + damage + " ダメージ", NamedTextColor.WHITE))
                 .build();
         if (multiplier > 1.0) {
